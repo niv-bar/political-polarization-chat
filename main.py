@@ -7,9 +7,7 @@ import warnings
 # Suppress tqdm warning
 warnings.filterwarnings("ignore", category=UserWarning, module="tqdm")
 
-# API Keys - Enter your keys here
-GEMINI_API_KEY = "REDACTED_KEY"
-OPENAI_API_KEY = "REDACTED_KEY"
+
 
 # Page configuration
 st.set_page_config(
