@@ -147,3 +147,4 @@ data/conversations/
 user_data/
 conversation_logs/
 annotations/
+.idea/
