@@ -244,9 +244,17 @@ class GeminiClient:
             return "❌ שגיאה: הלקוח לא מוכן"  # Error: Client not ready
 
         try:
+            # Enhanced prompt with instruction for accuracy
+            enhanced_prompt = f"""
+אנא ענה בדיוק ובהתבסס על מידע עדכני ומדויק מחיפוש באינטרנט.
+אם אתה צריך מידע על תאריכים או אירועים עדכניים, חפש את המידע הנוכחי.
+
+שאלת המשתמש: {prompt}
+"""
+
             response = self._client.models.generate_content(
                 model="gemini-2.5-flash",
-                contents=prompt,
+                contents=enhanced_prompt,
                 config=self._config,
             )
             return response.text
@@ -415,10 +423,19 @@ class PoliticalChatbot:
                     # Get chat context for better responses
                     chat_context = self.chat_history.get_chat_context()
 
-                    # Enhanced prompt with context if available
-                    enhanced_prompt = prompt
+                    # Enhanced prompt with context (without fixed date)
                     if chat_context:
-                        enhanced_prompt = f"הקשר השיחה הקודם:\n{chat_context}\n\nשאלה נוכחית: {prompt}"
+                        enhanced_prompt = f"""
+אנא ענה בדיוק ובהתבסס על מידע עדכני ומדויק מחיפוש באינטרנט.
+אם אתה צריך מידע על תאריכים או אירועים עדכניים, חפש את המידע הנוכחי.
+
+הקשר השיחה הקודם:
+{chat_context}
+
+שאלה נוכחית: {prompt}
+"""
+                    else:
+                        enhanced_prompt = prompt
 
                     response_text = self._gemini_client.generate_response(enhanced_prompt)
                     self.ui_manager.render_rtl_message(response_text)
