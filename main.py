@@ -244,12 +244,14 @@ class GeminiClient:
             return "❌ שגיאה: הלקוח לא מוכן"  # Error: Client not ready
 
         try:
-            # Enhanced prompt with instruction for accuracy
+            # Enhanced prompt that forces web search for current information
             enhanced_prompt = f"""
-אנא ענה בדיוק ובהתבסס על מידע עדכני ומדויק מחיפוש באינטרנט.
-אם אתה צריך מידע על תאריכים או אירועים עדכניים, חפש את המידע הנוכחי.
+IMPORTANT: Use web search to get current, real-time information before answering.
+אנא חפש באינטרנט מידע עדכני לפני המענה. השתמש בחיפוש ברשת לקבלת מידע נוכחי ומדויק.
 
 שאלת המשתמש: {prompt}
+
+חפש ברשת מידע עדכני הקשור לשאלה זו לפני שאתה עונה.
 """
 
             response = self._client.models.generate_content(
