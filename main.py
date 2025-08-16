@@ -2,6 +2,7 @@ import streamlit as st
 from google import genai as google_genai
 from google.genai import types
 import warnings
+import os
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
@@ -123,22 +124,28 @@ class SidebarManager:
         Render the sidebar with settings and controls.
 
         Returns:
-            Optional[str]: The API key if provided, None otherwise
+            Optional[str]: The API key from secrets/environment, None if not found
         """
         with st.sidebar:
             st.header("⚙️ הגדרות")  # Settings
 
-            # API key input with session state persistence
-            api_key = st.text_input(
-                "🔑 מפתח API של Gemini:",  # Gemini API Key
-                type="password",
-                value=st.session_state.get("api_key", ""),
-                help="הזן את מפתח ה-API שלך מ-Google AI Studio"  # Enter your API key from Google AI Studio
-            )
+            # Get API key automatically from secrets or environment variables
+            api_key = self._get_api_key()
 
-            # Store API key in session state for persistence
+            # Show API key status
             if api_key:
-                st.session_state.api_key = api_key
+                st.success("✅ מפתח API טעון בהצלחה")
+                # Optionally show first few characters for verification
+                masked_key = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "***"
+                st.caption(f"🔑 {masked_key}")
+            else:
+                st.error("❌ מפתח API לא נמצא")
+                st.markdown("""
+                **הגדר מפתח API:**
+                1. לך ל-Settings → Secrets
+                2. הוסף: `GEMINI_API_KEY = "המפתח_שלך"`
+                3. שמור ורענן את הדף
+                """)
 
             st.markdown("---")
 
@@ -148,6 +155,28 @@ class SidebarManager:
                 st.rerun()
 
             return api_key
+
+    def _get_api_key(self) -> Optional[str]:
+        """
+        Get API key from Streamlit secrets or environment variables.
+
+        Returns:
+            Optional[str]: The API key if found, None otherwise
+        """
+        try:
+            # Try Streamlit secrets first
+            api_key = st.secrets.get("GEMINI_API_KEY", "")
+            if api_key:
+                return api_key
+        except Exception:
+            pass
+
+        # Fallback to environment variable
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        if api_key:
+            return api_key
+
+        return None
 
     def _clear_chat_history(self) -> None:
         """
@@ -399,11 +428,35 @@ class PoliticalChatbot:
 
     def display_api_key_warning(self) -> None:
         """
-        Display warning and information when API key is not provided.
+        Display error message when API key is not found in secrets.
         """
-        st.warning("⚠️ אנא הזן מפתח API של Google Gemini בצד שמאל.")  # Please enter Google Gemini API key on the left
-        st.info(
-            "💡 קבל מפתח API חינמי מ-[Google AI Studio](https://makersuite.google.com/app/apikey)")  # Get free API key from Google AI Studio
+        st.error("❌ מפתח API לא נמצא ברכיבי המערכת")
+        st.markdown("""
+        ### 🔧 כיצד להגדיר מפתח API:
+
+        1. **לך להגדרות האפליקציה:**
+           - לחץ על התפריט ⋮ → Settings
+           - או לחץ על "Manage app" 
+
+        2. **הוסף ב-Secrets:**
+           ```toml
+           GEMINI_API_KEY = "המפתח_שלך_מ_Google_AI_Studio"
+           ```
+
+        3. **שמור ורענן את הדף**
+
+        4. **קבל מפתח API חינמי:** [Google AI Studio](https://makersuite.google.com/app/apikey)
+        """)
+
+        # Debug information
+        with st.expander("🔧 מידע דיבוג"):
+            try:
+                secrets_keys = list(st.secrets.keys()) if hasattr(st.secrets, 'keys') else []
+                st.write(f"מפתחות זמינים ב-Secrets: {secrets_keys}")
+                env_var_available = bool(os.getenv("GEMINI_API_KEY"))
+                st.write(f"משתנה סביבה זמין: {env_var_available}")
+            except Exception as e:
+                st.write(f"שגיאה בבדיקת secrets: {e}")
 
     def run(self) -> None:
         """
