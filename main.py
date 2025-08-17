@@ -3,61 +3,365 @@ from google import genai as google_genai
 from google.genai import types
 import warnings
 import os
+import json
+import uuid
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
-# Suppress tqdm warnings for cleaner output
 warnings.filterwarnings("ignore", category=UserWarning, module="tqdm")
 
 
 @dataclass
 class ChatMessage:
-    """
-    Data class representing a chat message.
-
-    Attributes:
-        role (str): The role of the message sender ('user' or 'assistant')
-        content (str): The content of the message
-        timestamp (str): When the message was created (for current session only)
-    """
+    """Data class for chat messages with automatic timestamp."""
     role: str
     content: str
     timestamp: str = None
 
     def __post_init__(self):
-        """Set timestamp if not provided."""
         if self.timestamp is None:
             self.timestamp = datetime.now().isoformat()
 
 
-class UIManager:
-    """
-    Manages the user interface components and styling for the Streamlit app.
+@dataclass
+class UserProfile:
+    """Data class for user demographic and political profile."""
+    # Session Info
+    session_id: str = ""
+    created_at: str = ""
 
-    This class handles page configuration, CSS styling for Hebrew RTL support,
-    and UI component rendering.
-    """
+    # Demographic Data
+    gender: str = ""
+    age: int = 0
+    marital_status: str = ""
+    region: str = ""
+    religiosity: int = 0
+
+    # Political Data
+    political_stance: int = 0
+    protest_participation: str = ""
+    influence_sources: List[str] = None
+
+    # Polarization Measurements
+    feeling_thermometer: Dict[str, int] = None
+    social_distance: Dict[str, int] = None
+
+    def __post_init__(self):
+        if self.session_id == "":
+            self.session_id = str(uuid.uuid4())
+        if self.created_at == "":
+            self.created_at = datetime.now().isoformat()
+        if self.influence_sources is None:
+            self.influence_sources = []
+        if self.feeling_thermometer is None:
+            self.feeling_thermometer = {}
+        if self.social_distance is None:
+            self.social_distance = {}
+
+
+class QuestionnaireManager:
+    """Manages the user questionnaire for demographic and political profiling."""
+
+    def __init__(self):
+        self.ui_manager = UIManager()
+
+    def render_questionnaire(self) -> bool:
+        """Render the questionnaire and return True if completed."""
+        self.ui_manager.render_header_questionnaire()
+
+        with st.form("user_questionnaire"):
+            st.markdown("### 📊 מידע דמוגרפי")
+
+            # Demographic Questions
+            gender = st.selectbox(
+                "מגדר:",
+                options=["", "זכר", "נקבה", "אחר", "מעדיף/ה לא לענות"],
+                help="בחר/י את המגדר שלך"
+            )
+
+            age = st.number_input(
+                "גיל:",
+                min_value=18, max_value=120, value=25,
+                help="הזן/י את גילך"
+            )
+
+            marital_status = st.selectbox(
+                "מצב משפחתי:",
+                options=["", "רווק/ה", "נשוי/אה", "גרוש/ה", "אלמן/ה", "בזוגיות"],
+                help="בחר/י את מצבך המשפחתי"
+            )
+
+            region = st.selectbox(
+                "אזור מגורים:",
+                options=["", "צפון", "חיפה והצפון", "מרכז", "ירושלים", "דרום", "יהודה ושומרון"],
+                help="בחר/י את אזור המגורים שלך"
+            )
+
+            religiosity = st.slider(
+                "רמת דתיות (1=חילוני לגמרי, 10=דתי מאוד):",
+                min_value=1, max_value=10, value=5,
+                help="דרג/י את רמת הדתיות שלך"
+            )
+
+            st.markdown("### 🗳️ מידע פוליטי")
+
+            political_stance = st.slider(
+                "עמדה פוליטית (1=שמאל קיצוני, 10=ימין קיצוני):",
+                min_value=1, max_value=10, value=5,
+                help="איפה אתה ממקם את עצמך בספקטרום הפוליטי?"
+            )
+
+            protest_participation = st.selectbox(
+                "השתתפות בהפגנות בשנה האחרונה:",
+                options=["", "לא השתתפתי", "השתתפתי מדי פעם", "השתתפתי רבות", "השתתפתי באופן קבוע"],
+                help="באיזו מידה השתתפת בהפגנות?"
+            )
+
+            influence_sources = st.multiselect(
+                "מקורות השפעה על דעותיך הפוליטיות:",
+                options=["משפחה", "חברים", "מדיה מסורתית", "רשתות חברתיות", "פוליטיקאים", "אקדמיה",
+                         "דת/מנהיגים רוחניים", "ניסיון אישי"],
+                help="בחר/י את המקורות המשפיעים על דעותיך"
+            )
+
+            st.markdown("### 🌡️ מדדי קיטוב - מדי חום רגשי")
+            st.caption("דרג/י את הרגש שלך כלפי מפלגות שונות (0=קר מאוד/שנאה חזקה, 100=חם מאוד/אהדה חזקה)")
+
+            parties = ["ליכוד", "יש עתיד", "הציונות הדתית", "יהדות התורה", "העבודה", "מרץ", "ש״ס", "ישראל ביתנו"]
+            feeling_thermometer = {}
+
+            col1, col2 = st.columns(2)
+            for i, party in enumerate(parties):
+                with col1 if i % 2 == 0 else col2:
+                    feeling_thermometer[party] = st.slider(
+                        f"{party}:",
+                        min_value=0, max_value=100, value=50,
+                        help=f"איך אתה מרגיש כלפי {party}?"
+                    )
+
+            st.markdown("### 🤝 מדד מרחק חברתי")
+            st.caption("עד כמה היית מרגיש בנוח במצבים הבאים עם אנשים בעלי דעות פוליטיות שונות ממך?")
+            st.caption("(1=מאוד לא נוח, 6=מאוד נוח)")
+
+            social_situations = [
+                "לחיות באותה השכונה",
+                "לעבוד באותו מקום עבודה",
+                "להיות חברים קרובים",
+                "שבן/בת המשפחה שלי יתחתן עם מישהו מהקבוצה הזו"
+            ]
+
+            social_distance = {}
+            for situation in social_situations:
+                social_distance[situation] = st.slider(
+                    f"{situation}:",
+                    min_value=1, max_value=6, value=3,
+                    help=f"עד כמה נוח לך ש{situation}?"
+                )
+
+            st.markdown("---")
+
+            # Option to skip validation
+            skip_validation = st.checkbox(
+                "דלג על שדות חובה ומעבר ישירות לצ'אט",
+                help="סמן/י כדי לדלג על מילוי שדות חובה ולעבור ישירות לצ'אט"
+            )
+
+            submitted = st.form_submit_button("המשך לצ'אט 💬", use_container_width=True)
+
+            if submitted:
+                # Validate required fields only if not skipping
+                if not skip_validation and not all([gender, marital_status, region, protest_participation]):
+                    st.error("אנא מלא/י את כל השדות הנדרשים או סמן/י 'דלג על שדות חובה'")
+                    return False
+
+                # Create user profile with session ID
+                user_profile = UserProfile(
+                    gender=gender,
+                    age=age if age > 18 else 18,  # Ensure minimum age
+                    marital_status=marital_status,
+                    region=region,
+                    religiosity=religiosity,
+                    political_stance=political_stance,
+                    protest_participation=protest_participation,
+                    influence_sources=influence_sources,
+                    feeling_thermometer=feeling_thermometer,
+                    social_distance=social_distance
+                )
+
+                # Save to session state only (no automatic file saving)
+                self._save_user_profile(user_profile)
+
+                st.success(f"פרופיל נשמר בהצלחה! (מזהה: {user_profile.session_id[:8]}) מועבר לצ'אט...")
+                st.rerun()
+
+        return False
+
+    def _save_user_profile(self, profile: UserProfile) -> None:
+        """Save user profile to session state only."""
+        st.session_state.user_profile = profile
+        st.session_state.questionnaire_completed = True
+
+    def is_questionnaire_completed(self) -> bool:
+        """Check if questionnaire is completed."""
+        return st.session_state.get("questionnaire_completed", False)
+
+
+class FinalPageManager:
+    """Manages the final page after conversation completion."""
+
+    def __init__(self):
+        self.ui_manager = UIManager()
+
+    def render_final_page(self) -> None:
+        """Render the final page with option to save data."""
+        self.ui_manager.render_header_final()
+
+        # Show conversation summary
+        messages = ChatHistoryManager.get_messages()
+        message_count = len(messages)
+        user_messages = len([m for m in messages if m["role"] == "user"])
+
+        st.markdown("### 📊 סיכום השיחה")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("סך הודעות", message_count)
+        with col2:
+            st.metric("הודעות משתמש", user_messages)
+        with col3:
+            st.metric("הודעות בוט", message_count - user_messages)
+
+        st.markdown("---")
+
+        # Data saving options
+        st.markdown("### 💾 שמירת נתונים למחקר")
+        st.markdown(
+            '<div style="direction: rtl; text-align: right;">האם תרצה לשמור את נתוני השיחה למחקר על קיטוב פוליטי? הנתונים נשמרים באופן אנונימי.</div>',
+            unsafe_allow_html=True
+        )
+
+        col1, col2, col3 = st.columns([1, 1, 1])
+
+        with col2:
+            if st.button("💾 שמור נתונים למחקר", use_container_width=True, type="primary"):
+                self._save_conversation_data()
+                st.success("✅ הנתונים נשמרו בהצלחה! תודה על ההשתתפות במחקר.")
+                st.balloons()
+
+        st.markdown("---")
+
+        # Navigation options
+        st.markdown("### 🔄 אפשרויות נוספות")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("🔙 חזרה לשאלון", use_container_width=True):
+                self._reset_to_questionnaire()
+
+        with col2:
+            if st.button("🏠 התחל מחדש", use_container_width=True):
+                self._reset_application()
+
+    def _save_conversation_data(self) -> None:
+        """Save conversation data with user profile to JSON."""
+        try:
+            # Get user profile and messages
+            profile = st.session_state.get("user_profile")
+            messages = ChatHistoryManager.get_messages()
+
+            if not profile:
+                st.error("שגיאה: לא נמצא פרופיל משתמש")
+                return
+
+            # Debug info
+            st.info(f"נמצאו {len(messages)} הודעות לשמירה")
+
+            # Create complete session data
+            session_data = {
+                "session_id": profile.session_id,
+                "created_at": profile.created_at,
+                "finished_at": datetime.now().isoformat(),
+                "user_profile": asdict(profile),
+                "conversation": messages,
+                "conversation_stats": {
+                    "total_messages": len(messages),
+                    "user_messages": len([m for m in messages if m["role"] == "user"]),
+                    "bot_messages": len([m for m in messages if m["role"] == "assistant"]),
+                    "duration_minutes": self._calculate_duration(messages)
+                }
+            }
+
+            # Debug: show what we're saving
+            if len(messages) == 0:
+                st.warning("אין הודעות לשמירה - השיחה ריקה")
+                return
+
+            # Ensure data directory exists
+            os.makedirs("conversation_data", exist_ok=True)
+
+            # Save complete session data
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"conversation_data/complete_session_{profile.session_id[:8]}_{timestamp}.json"
+
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(session_data, f, ensure_ascii=False, indent=2)
+
+            # Also append to master conversation file
+            master_file = "conversation_data/all_conversations.jsonl"
+            with open(master_file, 'a', encoding='utf-8') as f:
+                json.dump(session_data, f, ensure_ascii=False)
+                f.write('\n')
+
+            st.info(f"נתונים נשמרו בקובץ: {filename}")
+
+        except Exception as e:
+            st.error(f"שגיאה בשמירת השיחה: {str(e)}")
+            st.exception(e)  # Show full error details
+
+    def _calculate_duration(self, messages: List[Dict]) -> float:
+        """Calculate conversation duration in minutes."""
+        if not messages or len(messages) < 2:
+            return 0.0
+
+        try:
+            start_time = datetime.fromisoformat(messages[0]["timestamp"])
+            end_time = datetime.fromisoformat(messages[-1]["timestamp"])
+            duration = (end_time - start_time).total_seconds() / 60
+            return round(duration, 2)
+        except:
+            return 0.0
+
+    def _reset_to_questionnaire(self) -> None:
+        """Reset to questionnaire page."""
+        st.session_state.questionnaire_completed = False
+        st.session_state.conversation_finished = False
+        if "user_profile" in st.session_state:
+            del st.session_state.user_profile
+        ChatHistoryManager.clear_history()
+        st.rerun()
+
+    def _reset_application(self) -> None:
+        """Reset entire application."""
+        # Clear all session state
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+
+class UIManager:
+    """Manages UI components and Hebrew RTL styling."""
 
     @staticmethod
     def configure_page() -> None:
-        """
-        Configure the Streamlit page settings with Hebrew title and RTL layout.
-        """
         st.set_page_config(
-            page_title="צ'אטבוט פוליטי",  # Political Chatbot in Hebrew
+            page_title="צ'אטבוט פוליטי",
             page_icon="🗳️",
             layout="wide"
         )
 
     @staticmethod
     def apply_rtl_styling() -> None:
-        """
-        Apply CSS styling for Hebrew RTL (Right-to-Left) text support.
-
-        This method injects comprehensive CSS to ensure proper Hebrew text
-        display and right-to-left layout throughout the application.
-        """
+        """Apply comprehensive Hebrew RTL styling."""
         rtl_css = """
         <style>
             .main .block-container {direction: rtl;}
@@ -65,21 +369,18 @@ class UIManager:
             .stChatMessage > div {direction: rtl; text-align: right;}
             .stMarkdown {direction: rtl; text-align: right;}
             .stMarkdown p {direction: rtl; text-align: right;}
-            .css-1d391kg {direction: ltr;}
             .stChatInputContainer {direction: rtl;}
             .stChatInputContainer input {direction: rtl; text-align: right !important;}
             div[data-testid="stChatInput"] {direction: rtl;}
             div[data-testid="stChatInput"] input {direction: rtl; text-align: right !important;}
             div[data-testid="stChatInput"] input::placeholder {text-align: right; direction: rtl;}
-            .stSelectbox > div > div {direction: rtl; text-align: right;}
-            .stTextInput > div > div {direction: rtl; text-align: right;}
             .stButton > button {direction: rtl; text-align: right;}
-            .stHeader {direction: rtl; text-align: right;}
-            .stSubheader {direction: rtl; text-align: right;}
-            .stTitle {direction: rtl; text-align: right;}
-            .stWarning {direction: rtl; text-align: right;}
-            .stInfo {direction: rtl; text-align: right;}
-            .stSuccess {direction: rtl; text-align: right;}
+            .stWarning, .stInfo, .stSuccess, .stError {direction: rtl; text-align: right;}
+            .stSelectbox > label {direction: rtl; text-align: right;}
+            .stSlider > label {direction: rtl; text-align: right;}
+            .stMultiSelect > label {direction: rtl; text-align: right;}
+            .stNumberInput > label {direction: rtl; text-align: right;}
+            .stMetric {direction: rtl; text-align: right;}
             h1, h2, h3, h4, h5, h6 {direction: rtl; text-align: right;}
         </style>
         """
@@ -87,20 +388,31 @@ class UIManager:
 
     @staticmethod
     def render_header() -> None:
-        """
-        Render the main header and divider for the application.
-        """
-        st.title("🗳️ צ'אטבוט פוליטי")  # Political Chatbot
+        st.title("🗳️ צ'אטבוט פוליטי")
+        st.markdown("---")
+
+    @staticmethod
+    def render_header_questionnaire() -> None:
+        st.title("📋 שאלון מאפיינים אישיים ופוליטיים")
+        st.markdown("**אנא מלא/י את השאלון הבא לפני תחילת השיחה עם הבוט**")
+        st.markdown(
+            '<div style="direction: rtl; text-align: right;">המידע נשמר באופן אנונימי ומשמש למחקר על קיטוב פוליטי</div>',
+            unsafe_allow_html=True
+        )
+        st.markdown("---")
+
+    @staticmethod
+    def render_header_final() -> None:
+        st.title("🎯 סיום השיחה")
+        st.markdown("**תודה על השתתפותך בשיחה עם הבוט הפוליטי!**")
+        st.markdown(
+            '<div style="direction: rtl; text-align: right;">להלן סיכום השיחה ואפשרות לשמור את הנתונים למחקר</div>',
+            unsafe_allow_html=True
+        )
         st.markdown("---")
 
     @staticmethod
     def render_rtl_message(content: str) -> None:
-        """
-        Render a message with proper RTL (Right-to-Left) formatting.
-
-        Args:
-            content (str): The message content to render
-        """
         st.markdown(
             f'<div style="direction: rtl; text-align: right;">{content}</div>',
             unsafe_allow_html=True
@@ -108,143 +420,65 @@ class UIManager:
 
 
 class SidebarManager:
-    """
-    Manages the sidebar components including settings and controls.
+    """Manages sidebar controls."""
 
-    This class handles API key input, chat history clearing, and other
-    sidebar functionality.
-    """
-
-    def __init__(self):
-        """Initialize the sidebar manager."""
-        pass
-
-    def render_sidebar(self) -> Optional[str]:
-        """
-        Render the sidebar with settings and controls.
-
-        Returns:
-            Optional[str]: The API key from secrets/environment, None if not found
-        """
+    def render_sidebar(self) -> None:
         with st.sidebar:
-            st.header("⚙️ הגדרות")  # Settings
+            st.header("⚙️ הגדרות")
 
-            # Get API key automatically from secrets or environment variables
-            api_key = self._get_api_key()
-
-            # Show API key status
-            if api_key:
-                st.success("✅ מפתח API טעון בהצלחה")
-                # Optionally show first few characters for verification
-                masked_key = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "***"
-                st.caption(f"🔑 {masked_key}")
-            else:
-                st.error("❌ מפתח API לא נמצא")
-                st.markdown("""
-                **הגדר מפתח API:**
-                1. לך ל-Settings → Secrets
-                2. הוסף: `GEMINI_API_KEY = "המפתח_שלך"`
-                3. שמור ורענן את הדף
-                """)
+            # Back to questionnaire button
+            if st.button("🔙 חזרה לשאלון"):
+                st.session_state.questionnaire_completed = False
+                if "user_profile" in st.session_state:
+                    del st.session_state.user_profile
+                st.rerun()
 
             st.markdown("---")
 
-            # Clear chat history button - session only
-            if st.button("🗑️ נקה היסטוריית שיחה"):  # Clear chat history
+            # Finish conversation button
+            if st.button("✅ סיים שיחה"):
+                st.session_state.conversation_finished = True
+                st.rerun()
+
+            st.markdown("---")
+
+            if st.button("🗑️ נקה היסטוריית שיחה"):
                 ChatHistoryManager.clear_history()
                 st.rerun()
 
-            return api_key
-
-    def _get_api_key(self) -> Optional[str]:
-        """
-        Get API key from Streamlit secrets or environment variables.
-
-        Returns:
-            Optional[str]: The API key if found, None otherwise
-        """
-        try:
-            # Try Streamlit secrets first
-            api_key = st.secrets.get("GEMINI_API_KEY", "")
-            if api_key:
-                return api_key
-        except Exception:
-            pass
-
-        # Fallback to environment variable
-        api_key = os.getenv("GEMINI_API_KEY", "")
-        if api_key:
-            return api_key
-
-        return None
-
-    def _clear_chat_history(self) -> None:
-        """
-        Clear the chat history from session state only.
-        """
-        st.session_state.messages = []
-
 
 class GeminiClient:
-    """
-    Handles communication with Google's Gemini AI model.
-
-    This class manages API configuration, request formatting, and response
-    processing for the Gemini Flash model with web search capabilities.
-    """
+    """Handles Gemini AI communication with web search."""
 
     def __init__(self, api_key: str):
-        """
-        Initialize the Gemini client with API key.
-
-        Args:
-            api_key (str): The Google AI Studio API key
-        """
         self.api_key = api_key
         self._client = None
         self._config = None
         self._initialize_client()
 
     def _initialize_client(self) -> None:
-        """
-        Initialize the Gemini client and configuration.
-
-        Sets up the client with web search tool and optimized parameters
-        for political analysis.
-        """
+        """Initialize Gemini client with web search tool."""
         try:
             self._client = google_genai.Client(api_key=self.api_key)
-
-            # Configure web search tool for real-time information
             grounding_tool = types.Tool(google_search=types.GoogleSearch())
 
-            # Optimized configuration for political chatbot
             self._config = types.GenerateContentConfig(
                 tools=[grounding_tool],
-                temperature=0.7,  # Balanced creativity for political analysis
-                top_p=0.95,  # High diversity in token selection
-                top_k=64,  # Moderate vocabulary restriction
-                max_output_tokens=8192,  # Extended responses for detailed analysis
+                temperature=0.7,
+                top_p=0.95,
+                top_k=64,
+                max_output_tokens=8192,
             )
         except Exception as e:
             st.error(f"❌ Failed to initialize Gemini client: {str(e)}")
             self._client = None
 
     def generate_response(self, prompt: str) -> str:
-        """
-        Generate a response from Gemini with web search capabilities.
-
-        Args:
-            prompt (str): The user's input prompt
-
-        Returns:
-            str: The generated response or error message
-        """
+        """Generate response with web search."""
         if not self._client or not self._config:
-            return "❌ שגיאה: הלקוח לא מוכן"  # Error: Client not ready
+            return "❌ שגיאה: הלקוח לא מוכן"
 
         try:
-            # Enhanced prompt that forces web search for current information
             enhanced_prompt = f"""
 IMPORTANT: Use web search to get current, real-time information before answering.
 אנא חפש באינטרנט מידע עדכני לפני המענה. השתמש בחיפוש ברשת לקבלת מידע נוכחי ומדויק.
@@ -253,7 +487,6 @@ IMPORTANT: Use web search to get current, real-time information before answering
 
 חפש ברשת מידע עדכני הקשור לשאלה זו לפני שאתה עונה.
 """
-
             response = self._client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=enhanced_prompt,
@@ -261,175 +494,123 @@ IMPORTANT: Use web search to get current, real-time information before answering
             )
             return response.text
         except Exception as e:
-            return f"❌ שגיאה ב-Gemini: {str(e)}"  # Error in Gemini
+            return f"❌ שגיאה ב-Gemini: {str(e)}"
 
 
 class ChatHistoryManager:
-    """
-    Manages chat message history and session state for current session only.
-
-    This class handles storing, retrieving, and managing chat messages
-    in Streamlit's session state. Messages persist only during the current
-    browser session and are cleared when the session ends or manually cleared.
-    """
+    """Manages chat history in session state."""
 
     @staticmethod
     def initialize_chat_history() -> None:
-        """
-        Initialize chat history in session state if not already present.
-        Only creates empty history for new sessions.
-        """
         if "messages" not in st.session_state:
             st.session_state.messages = []
 
     @staticmethod
     def add_message(role: str, content: str) -> None:
-        """
-        Add a new message to the current session's chat history.
-
-        Args:
-            role (str): The role of the message sender ('user' or 'assistant')
-            content (str): The content of the message
-        """
         message = ChatMessage(role=role, content=content)
         message_dict = {
             "role": message.role,
             "content": message.content,
             "timestamp": message.timestamp
         }
-
-        # Add to current session state only
         st.session_state.messages.append(message_dict)
 
     @staticmethod
     def get_messages() -> List[Dict[str, str]]:
-        """
-        Retrieve all messages from current session's chat history.
-
-        Returns:
-            List[Dict[str, str]]: List of message dictionaries from current session
-        """
         return st.session_state.get("messages", [])
 
     @staticmethod
     def clear_history() -> None:
-        """
-        Clear the current session's chat history.
-        """
         st.session_state.messages = []
 
     @staticmethod
     def render_chat_history() -> None:
-        """
-        Render all chat messages from current session in the chat interface.
-        """
         for message in ChatHistoryManager.get_messages():
             with st.chat_message(message["role"]):
                 UIManager.render_rtl_message(message["content"])
 
     @staticmethod
     def get_chat_context() -> str:
-        """
-        Get the full chat context as a formatted string for AI context.
-
-        Returns:
-            str: Formatted chat history for providing context to AI
-        """
+        """Get formatted chat context for AI."""
         messages = ChatHistoryManager.get_messages()
         if not messages:
             return ""
 
         context_parts = []
         for msg in messages:
-            role_label = "משתמש" if msg["role"] == "user" else "עוזר"  # User or Assistant
+            role_label = "משתמש" if msg["role"] == "user" else "עוזר"
             context_parts.append(f"{role_label}: {msg['content']}")
 
         return "\n\n".join(context_parts)
 
 
 class PoliticalChatbot:
-    """
-    Main political chatbot application class.
-
-    This class orchestrates the entire chatbot application, managing UI,
-    chat history, and AI interactions for political discussions.
-    """
+    """Main political chatbot application."""
 
     def __init__(self):
-        """
-        Initialize the political chatbot application.
-        """
         self.ui_manager = UIManager()
+        self.questionnaire_manager = QuestionnaireManager()
+        self.final_page_manager = FinalPageManager()
         self.sidebar_manager = SidebarManager()
         self.chat_history = ChatHistoryManager()
         self._gemini_client: Optional[GeminiClient] = None
 
     def setup_ui(self) -> None:
-        """
-        Set up the user interface components and styling.
-        """
         self.ui_manager.configure_page()
         self.ui_manager.apply_rtl_styling()
-        self.ui_manager.render_header()
 
     def initialize_session_state(self) -> None:
-        """
-        Initialize all necessary session state variables.
-        """
         self.chat_history.initialize_chat_history()
+        # Initialize questionnaire state
+        if "questionnaire_completed" not in st.session_state:
+            st.session_state.questionnaire_completed = False
+        if "conversation_finished" not in st.session_state:
+            st.session_state.conversation_finished = False
 
-    def handle_sidebar(self) -> Optional[str]:
-        """
-        Handle sidebar rendering and return API key if available.
+    def _get_api_key(self) -> Optional[str]:
+        """Get API key from Streamlit secrets or environment variables."""
+        try:
+            api_key = st.secrets.get("GEMINI_API_KEY", "")
+            if api_key:
+                return api_key
+        except Exception:
+            pass
 
-        Returns:
-            Optional[str]: The API key if provided, None otherwise
-        """
-        return self.sidebar_manager.render_sidebar()
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        return api_key if api_key else None
+
+    def handle_sidebar(self) -> None:
+        self.sidebar_manager.render_sidebar()
 
     def _initialize_gemini_client(self, api_key: str) -> None:
-        """
-        Initialize or update the Gemini client with the provided API key.
-
-        Args:
-            api_key (str): The Google AI Studio API key
-        """
         if not self._gemini_client or self._gemini_client.api_key != api_key:
             self._gemini_client = GeminiClient(api_key)
 
     def handle_user_input(self, api_key: str) -> None:
-        """
-        Handle user input and generate AI responses.
-
-        Args:
-            api_key (str): The Google AI Studio API key
-        """
-        # Initialize Gemini client with current API key
+        """Handle user input and generate AI responses."""
         self._initialize_gemini_client(api_key)
-
-        # Render existing chat history
         self.chat_history.render_chat_history()
 
-        # Handle new user input with context awareness
-        if prompt := st.chat_input("כתוב כאן..."):  # Write here...
-            # Add user message to current session history
+        if prompt := st.chat_input("כתוב כאן..."):
+            # Add and display user message
             self.chat_history.add_message("user", prompt)
-
-            # Display user message
             with st.chat_message("user"):
                 self.ui_manager.render_rtl_message(prompt)
 
-            # Generate and display assistant response with full context
+            # Generate and display AI response
             with st.chat_message("assistant"):
-                with st.spinner("🔍 מחפש מידע עדכני..."):  # Searching for current information...
-                    # Get chat context for better responses
+                with st.spinner("🔍 מחפש מידע עדכני..."):
                     chat_context = self.chat_history.get_chat_context()
 
-                    # Enhanced prompt with context (without fixed date)
+                    # Get user profile context
+                    user_context = self._get_user_context()
+
                     if chat_context:
                         enhanced_prompt = f"""
 אנא ענה בדיוק ובהתבסס על מידע עדכני ומדויק מחיפוש באינטרנט.
 אם אתה צריך מידע על תאריכים או אירועים עדכניים, חפש את המידע הנוכחי.
+
+{user_context}
 
 הקשר השיחה הקודם:
 {chat_context}
@@ -437,77 +618,66 @@ class PoliticalChatbot:
 שאלה נוכחית: {prompt}
 """
                     else:
-                        enhanced_prompt = prompt
+                        enhanced_prompt = f"""
+{user_context}
+
+{prompt}
+"""
 
                     response_text = self._gemini_client.generate_response(enhanced_prompt)
                     self.ui_manager.render_rtl_message(response_text)
-
-                    # Add assistant response to current session history
                     self.chat_history.add_message("assistant", response_text)
 
+    def _get_user_context(self) -> str:
+        """Generate user context from questionnaire data."""
+        if "user_profile" not in st.session_state:
+            return ""
+
+        profile = st.session_state.user_profile
+        context = f"""
+מידע על המשתמש (להתאמת התגובות):
+- גיל: {profile.age}
+- אזור: {profile.region}  
+- עמדה פוליטית: {profile.political_stance}/10 (1=שמאל, 10=ימין)
+- רמת דתיות: {profile.religiosity}/10
+- השתתפות בהפגנות: {profile.protest_participation}
+
+התאם את התשובות לפרופיל המשתמש תוך שמירה על אובייקטיביות ואיזון.
+"""
+        return context
+
     def display_api_key_warning(self) -> None:
-        """
-        Display error message when API key is not found in secrets.
-        """
         st.error("❌ מפתח API לא נמצא ברכיבי המערכת")
-        st.markdown("""
-        ### 🔧 כיצד להגדיר מפתח API:
-
-        1. **לך להגדרות האפליקציה:**
-           - לחץ על התפריט ⋮ → Settings
-           - או לחץ על "Manage app" 
-
-        2. **הוסף ב-Secrets:**
-           ```toml
-           GEMINI_API_KEY = "המפתח_שלך_מ_Google_AI_Studio"
-           ```
-
-        3. **שמור ורענן את הדף**
-
-        4. **קבל מפתח API חינמי:** [Google AI Studio](https://makersuite.google.com/app/apikey)
-        """)
-
-        # Debug information
-        with st.expander("🔧 מידע דיבוג"):
-            try:
-                secrets_keys = list(st.secrets.keys()) if hasattr(st.secrets, 'keys') else []
-                st.write(f"מפתחות זמינים ב-Secrets: {secrets_keys}")
-                env_var_available = bool(os.getenv("GEMINI_API_KEY"))
-                st.write(f"משתנה סביבה זמין: {env_var_available}")
-            except Exception as e:
-                st.write(f"שגיאה בבדיקת secrets: {e}")
 
     def run(self) -> None:
-        """
-        Main application entry point that orchestrates the entire chatbot.
-
-        This method sets up the UI, handles user interactions, and manages
-        the chat flow from start to finish.
-        """
-        # Setup UI and initialize session state
+        """Main application entry point."""
         self.setup_ui()
         self.initialize_session_state()
 
-        # Handle sidebar and get API key
-        api_key = self.handle_sidebar()
-
-        # Main application logic
-        if not api_key:
-            self.display_api_key_warning()
+        # Check conversation flow state
+        if st.session_state.get("conversation_finished", False):
+            # Show final page
+            self.final_page_manager.render_final_page()
+        elif not self.questionnaire_manager.is_questionnaire_completed():
+            # Show questionnaire
+            self.questionnaire_manager.render_questionnaire()
         else:
-            self.handle_user_input(api_key)
+            # Show main chatbot
+            self.ui_manager.render_header()
+            self.handle_sidebar()
+            api_key = self._get_api_key()
+
+            if not api_key:
+                self.display_api_key_warning()
+            else:
+                self.handle_user_input(api_key)
 
 
 def main() -> None:
-    """
-    Application entry point.
-
-    Creates and runs the political chatbot application.
-    """
+    """Application entry point."""
     chatbot = PoliticalChatbot()
     chatbot.run()
 
 
-# Run the application
 if __name__ == "__main__":
     main()
