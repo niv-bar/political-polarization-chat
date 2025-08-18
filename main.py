@@ -497,7 +497,6 @@ class UIManager:
         )
         st.markdown("---")
 
-    @staticmethod
     def configure_page() -> None:
         st.set_page_config(
             page_title="צ'אטבוט פוליטי",
