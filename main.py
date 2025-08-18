@@ -301,6 +301,103 @@ class FirestoreManager:
             return []
 
 
+class WelcomePageManager:
+    """Manages the welcome/home page with user type selection."""
+
+    def __init__(self):
+        self.ui_manager = UIManager()
+
+    def render_welcome_page(self) -> None:
+        """Render the main welcome page with user type selection."""
+        self.ui_manager.render_header_welcome()
+
+        # Main content
+        st.markdown("### ברוכים הבאים למחקר על קיטוב פוליטי!")
+        st.markdown(
+            '<div style="direction: rtl; text-align: right;">המחקר בוחן כיצד שיחות עם בוט פוליטי יכולות להשפיע על עמדות ודעות קדומות. ההשתתפות אנונימית ומתבססת על הסכמה.</div>',
+            unsafe_allow_html=True
+        )
+
+        st.markdown("---")
+
+        # Create two columns for user type selection
+        col1, col2, col3 = st.columns([1, 2, 1])
+
+        with col2:
+            # Regular user path
+            st.markdown("### 👥 משתתף במחקר")
+            st.markdown(
+                '<div style="direction: rtl; text-align: right;">התחל/י את השאלון והשיחה עם הבוט הפוליטי</div>',
+                unsafe_allow_html=True
+            )
+
+            if st.button("🚀 התחל מחקר", use_container_width=True, type="primary"):
+                st.session_state.user_type = "participant"
+                st.session_state.show_welcome = False
+                st.rerun()
+
+            st.markdown("---")
+
+            # Admin path
+            st.markdown("### 🔒 כניסת מנהל")
+            st.markdown(
+                '<div style="direction: rtl; text-align: right;">גישה למנהלי המחקר לצפייה בנתונים</div>',
+                unsafe_allow_html=True
+            )
+
+            # Admin password input
+            admin_password = st.text_input(
+                "סיסמת מנהל:",
+                type="password",
+                placeholder="הזן סיסמה",
+                help="סיסמה למנהלי המחקר בלבד"
+            )
+
+            if st.button("🔐 כניסה לניהול", use_container_width=True):
+                if self._verify_admin_password(admin_password):
+                    st.session_state.user_type = "admin"
+                    st.session_state.show_welcome = False
+                    st.session_state.show_data_viewer = True
+                    st.success("✅ כניסה מוצלחת!")
+                    st.rerun()
+                else:
+                    st.error("❌ סיסמה שגויה")
+
+        # Footer info
+        st.markdown("---")
+        st.markdown("### ℹ️ מידע על המחקר")
+        with st.expander("לחץ/י לפרטים נוספים"):
+            st.markdown("""
+            **מטרת המחקר:** בחינת השפעת שיחות עם בוט פוליטי על עמדות ודעות
+
+            **משך ההשתתפות:** כ-15-20 דקות (שאלון + שיחה)
+
+            **פרטיות:** כל הנתונים אנונימיים ומוצפנים
+
+            **זכויות:** ניתן לסיים את ההשתתפות בכל עת
+
+            **איש קשר:** לשאלות ניתן לפנות למנהלי המחקר
+            """)
+
+    def _verify_admin_password(self, password: str) -> bool:
+        """Verify admin password against secrets or environment variable."""
+        try:
+            # Try to get admin password from Streamlit secrets
+            correct_password = st.secrets.get("ADMIN_PASSWORD", "")
+            if correct_password and password == correct_password:
+                return True
+        except Exception:
+            pass
+
+        # Fallback to environment variable
+        correct_password = os.getenv("ADMIN_PASSWORD", "")
+        if correct_password and password == correct_password:
+            return True
+
+        # Default password for development (should be changed in production)
+        return password == "admin123"
+
+
 class DataViewerManager:
     """Manages the data viewer page for researchers."""
 
@@ -311,6 +408,16 @@ class DataViewerManager:
     def render_data_viewer(self) -> None:
         """Render the data viewer page."""
         self.ui_manager.render_header_data_viewer()
+
+        # Admin controls
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🏠 חזרה למסך הראשי", use_container_width=True):
+                st.session_state.show_data_viewer = False
+                st.session_state.show_welcome = True
+                st.rerun()
+
+        st.markdown("---")
 
         # Show statistics
         st.markdown("### 📊 סטטיסטיקות כלליות")
@@ -335,10 +442,16 @@ class DataViewerManager:
             preview_data = self.firestore_manager.get_conversations_preview()
 
             if preview_data:
-                import pandas as pd
-                df = pd.DataFrame(preview_data)
-                df.columns = ['מזהה', 'זמן סיום', 'הודעות', 'אזור', 'גיל']
-                st.dataframe(df, use_container_width=True)
+                try:
+                    import pandas as pd
+                    df = pd.DataFrame(preview_data)
+                    df.columns = ['מזהה', 'זמן סיום', 'הודעות', 'אזור', 'גיל']
+                    st.dataframe(df, use_container_width=True)
+                except ImportError:
+                    # Fallback if pandas not available
+                    for i, conv in enumerate(preview_data):
+                        st.write(
+                            f"{i + 1}. מזהה: {conv['session_id']}, הודעות: {conv['total_messages']}, אזור: {conv['user_region']}")
             else:
                 st.info("לא ניתן לטעון תצוגה מקדימה של השיחות")
         else:
