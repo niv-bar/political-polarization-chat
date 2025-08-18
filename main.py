@@ -1,6 +1,8 @@
 import streamlit as st
 from google import genai as google_genai
 from google.genai import types
+import firebase_admin
+from firebase_admin import credentials, firestore
 import warnings
 import os
 import json
@@ -207,151 +209,294 @@ class QuestionnaireManager:
         return st.session_state.get("questionnaire_completed", False)
 
 
-class FinalPageManager:
-    """Manages the final page after conversation completion."""
+class FirestoreManager:
+    """Manages Firebase Firestore database operations."""
+
+    def __init__(self):
+        self.db = None
+        self._initialize_firebase()
+
+    def _initialize_firebase(self):
+        """Initialize Firebase Admin SDK."""
+        try:
+            # Check if Firebase is already initialized
+            if not firebase_admin._apps:
+                # Try to get Firebase credentials from Streamlit secrets
+                if "firebase" in st.secrets:
+                    # Use secrets for production
+                    firebase_creds = dict(st.secrets["firebase"])
+                    cred = credentials.Certificate(firebase_creds)
+                    firebase_admin.initialize_app(cred)
+                else:
+                    # For local development, use service account file
+                    if os.path.exists("firebase-key.json"):
+                        cred = credentials.Certificate("firebase-key.json")
+                        firebase_admin.initialize_app(cred)
+                    else:
+                        st.error("❌ לא נמצאו אישורי Firebase")
+                        return
+
+            # Get Firestore client
+            self.db = firestore.client()
+
+        except Exception as e:
+            st.error(f"❌ שגיאה באתחול Firebase: {str(e)}")
+            self.db = None
+
+    def save_conversation_data(self, session_data: Dict) -> bool:
+        """Save conversation data to Firestore."""
+        try:
+            if not self.db:
+                st.error("❌ מסד הנתונים לא מוכן")
+                return False
+
+            # Save to 'conversations' collection
+            doc_ref = self.db.collection('conversations').document(session_data['session_id'])
+            doc_ref.set(session_data)
+
+            st.success("✅ הנתונים נשמרו בהצלחה למסד הנתונים!")
+            return True
+
+        except Exception as e:
+            st.error(f"❌ שגיאה בשמירת הנתונים: {str(e)}")
+            return False
+
+    def get_conversations_count(self) -> int:
+        """Get total number of conversations."""
+        try:
+            if not self.db:
+                return 0
+
+            conversations = self.db.collection('conversations').stream()
+            return len(list(conversations))
+
+        except Exception:
+            return 0
+
+    def get_conversations_preview(self, limit: int = 10) -> List[Dict]:
+        """Get preview of recent conversations."""
+        try:
+            if not self.db:
+                return []
+
+            conversations = (self.db.collection('conversations')
+                             .order_by('finished_at', direction=firestore.Query.DESCENDING)
+                             .limit(limit)
+                             .stream())
+
+            preview = []
+            for conv in conversations:
+                data = conv.to_dict()
+                preview.append({
+                    'session_id': data.get('session_id', '')[:8],
+                    'finished_at': data.get('finished_at', ''),
+                    'total_messages': data.get('conversation_stats', {}).get('total_messages', 0),
+                    'user_region': data.get('user_profile', {}).get('region', 'לא צוין'),
+                    'user_age': data.get('user_profile', {}).get('age', 0)
+                })
+
+            return preview
+
+        except Exception:
+            return []
+
+
+class DataViewerManager:
+    """Manages the data viewer page for researchers."""
 
     def __init__(self):
         self.ui_manager = UIManager()
+        self.firestore_manager = FirestoreManager()
 
-    def render_final_page(self) -> None:
-        """Render the final page with option to save data."""
-        self.ui_manager.render_header_final()
+    def render_data_viewer(self) -> None:
+        """Render the data viewer page."""
+        self.ui_manager.render_header_data_viewer()
 
-        # Show conversation summary
-        messages = ChatHistoryManager.get_messages()
-        message_count = len(messages)
-        user_messages = len([m for m in messages if m["role"] == "user"])
-
-        st.markdown("### 📊 סיכום השיחה")
+        # Show statistics
+        st.markdown("### 📊 סטטיסטיקות כלליות")
         col1, col2, col3 = st.columns(3)
+
+        total_conversations = self.firestore_manager.get_conversations_count()
+
         with col1:
-            st.metric("סך הודעות", message_count)
+            st.metric("סך שיחות", total_conversations)
         with col2:
-            st.metric("הודעות משתמש", user_messages)
+            st.metric("משתמשים פעילים", f"{total_conversations}/300")
         with col3:
-            st.metric("הודעות בוט", message_count - user_messages)
+            completion_rate = f"{(total_conversations / 300) * 100:.1f}%" if total_conversations > 0 else "0%"
+            st.metric("אחוז השלמה", completion_rate)
 
         st.markdown("---")
 
-        # Data saving options
-        st.markdown("### 💾 שמירת נתונים למחקר")
-        st.markdown(
-            '<div style="direction: rtl; text-align: right;">האם תרצה לשמור את נתוני השיחה למחקר על קיטוב פוליטי? הנתונים נשמרים באופן אנונימי.</div>',
-            unsafe_allow_html=True
-        )
+        # Show recent conversations preview
+        st.markdown("### 📋 תצוגת שיחות אחרונות")
 
-        col1, col2, col3 = st.columns([1, 1, 1])
+        if total_conversations > 0:
+            preview_data = self.firestore_manager.get_conversations_preview()
 
-        with col2:
-            if st.button("💾 שמור נתונים למחקר", use_container_width=True, type="primary"):
-                self._save_conversation_data()
-                st.success("✅ הנתונים נשמרו בהצלחה! תודה על ההשתתפות במחקר.")
-                st.balloons()
+            if preview_data:
+                import pandas as pd
+                df = pd.DataFrame(preview_data)
+                df.columns = ['מזהה', 'זמן סיום', 'הודעות', 'אזור', 'גיל']
+                st.dataframe(df, use_container_width=True)
+            else:
+                st.info("לא ניתן לטעון תצוגה מקדימה של השיחות")
+        else:
+            st.info("עדיין לא נשמרו שיחות במסד הנתונים")
 
         st.markdown("---")
 
-        # Navigation options
-        st.markdown("### 🔄 אפשרויות נוספות")
-        col1, col2 = st.columns(2)
+        # Instructions for accessing full data
+        st.markdown("### 🔍 גישה מלאה לנתונים")
+        st.markdown("""
+        **לקבלת גישה מלאה לנתונים המחקריים:**
+        1. גש ל-[Firebase Console](https://console.firebase.google.com)
+        2. בחר את הפרויקט שלך
+        3. עבור ל-Firestore Database
+        4. כל השיחות נמצאות ב-collection: `conversations`
+        5. ניתן לייצא לJSON או לחבר ל-Python/R לניתוח
+        """)
 
-        with col1:
-            if st.button("🔙 חזרה לשאלון", use_container_width=True):
-                self._reset_to_questionnaire()
 
-        with col2:
-            if st.button("🏠 התחל מחדש", use_container_width=True):
-                self._reset_application()
+class FinalPageManager:
+    class FinalPageManager:
+        """Manages the final page after conversation completion."""
 
-    def _save_conversation_data(self) -> None:
-        """Save conversation data with user profile to JSON."""
-        try:
-            # Get user profile and messages
-            profile = st.session_state.get("user_profile")
+        def __init__(self):
+            self.ui_manager = UIManager()
+            self.firestore_manager = FirestoreManager()
+
+        def render_final_page(self) -> None:
+            """Render the final page with option to save data."""
+            self.ui_manager.render_header_final()
+
+            # Show conversation summary
             messages = ChatHistoryManager.get_messages()
+            message_count = len(messages)
+            user_messages = len([m for m in messages if m["role"] == "user"])
 
-            if not profile:
-                st.error("שגיאה: לא נמצא פרופיל משתמש")
-                return
+            st.markdown("### 📊 סיכום השיחה")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("סך הודעות", message_count)
+            with col2:
+                st.metric("הודעות משתמש", user_messages)
+            with col3:
+                st.metric("הודעות בוט", message_count - user_messages)
 
-            # Debug info
-            st.info(f"נמצאו {len(messages)} הודעות לשמירה")
+            st.markdown("---")
 
-            # Create complete session data
-            session_data = {
-                "session_id": profile.session_id,
-                "created_at": profile.created_at,
-                "finished_at": datetime.now().isoformat(),
-                "user_profile": asdict(profile),
-                "conversation": messages,
-                "conversation_stats": {
-                    "total_messages": len(messages),
-                    "user_messages": len([m for m in messages if m["role"] == "user"]),
-                    "bot_messages": len([m for m in messages if m["role"] == "assistant"]),
-                    "duration_minutes": self._calculate_duration(messages)
+            # Data saving options
+            st.markdown("### 💾 שמירת נתונים למחקר")
+            st.markdown(
+                '<div style="direction: rtl; text-align: right;">האם תרצה לשמור את נתוני השיחה למחקר על קיטוב פוליטי? הנתונים נשמרים באופן אנונימי במסד נתונים מאובטח.</div>',
+                unsafe_allow_html=True
+            )
+
+            col1, col2, col3 = st.columns([1, 1, 1])
+
+            with col2:
+                if st.button("💾 שמור נתונים למחקר", use_container_width=True, type="primary"):
+                    success = self._save_conversation_data()
+                    if success:
+                        st.success("✅ הנתונים נשמרו בהצלחה במסד הנתונים! תודה על ההשתתפות במחקר.")
+                        st.balloons()
+
+            st.markdown("---")
+
+            # Navigation options
+            st.markdown("### 🔄 אפשרויות נוספות")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if st.button("🔙 חזרה לשאלון", use_container_width=True):
+                    self._reset_to_questionnaire()
+
+            with col2:
+                if st.button("🏠 התחל מחדש", use_container_width=True):
+                    self._reset_application()
+
+        def _save_conversation_data(self) -> bool:
+            """Save conversation data with user profile to Firestore."""
+            try:
+                # Get user profile and messages
+                profile = st.session_state.get("user_profile")
+                messages = ChatHistoryManager.get_messages()
+
+                if not profile:
+                    st.error("שגיאה: לא נמצא פרופיל משתמש")
+                    return False
+
+                # Check if there are messages to save
+                if len(messages) == 0:
+                    st.warning("אין הודעות לשמירה - השיחה ריקה")
+                    return False
+
+                # Create complete session data
+                session_data = {
+                    "session_id": profile.session_id,
+                    "created_at": profile.created_at,
+                    "finished_at": datetime.now().isoformat(),
+                    "user_profile": asdict(profile),
+                    "conversation": messages,
+                    "conversation_stats": {
+                        "total_messages": len(messages),
+                        "user_messages": len([m for m in messages if m["role"] == "user"]),
+                        "bot_messages": len([m for m in messages if m["role"] == "assistant"]),
+                        "duration_minutes": self._calculate_duration(messages)
+                    }
                 }
-            }
 
-            # Debug: show what we're saving
-            if len(messages) == 0:
-                st.warning("אין הודעות לשמירה - השיחה ריקה")
-                return
+                # Save to Firestore
+                return self.firestore_manager.save_conversation_data(session_data)
 
-            # Ensure data directory exists
-            os.makedirs("conversation_data", exist_ok=True)
+            except Exception as e:
+                st.error(f"שגיאה בשמירת השיחה: {str(e)}")
+                return False
 
-            # Save complete session data
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"conversation_data/complete_session_{profile.session_id[:8]}_{timestamp}.json"
+        def _calculate_duration(self, messages: List[Dict]) -> float:
+            """Calculate conversation duration in minutes."""
+            if not messages or len(messages) < 2:
+                return 0.0
 
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump(session_data, f, ensure_ascii=False, indent=2)
+            try:
+                start_time = datetime.fromisoformat(messages[0]["timestamp"])
+                end_time = datetime.fromisoformat(messages[-1]["timestamp"])
+                duration = (end_time - start_time).total_seconds() / 60
+                return round(duration, 2)
+            except:
+                return 0.0
 
-            # Also append to master conversation file
-            master_file = "conversation_data/all_conversations.jsonl"
-            with open(master_file, 'a', encoding='utf-8') as f:
-                json.dump(session_data, f, ensure_ascii=False)
-                f.write('\n')
+        def _reset_to_questionnaire(self) -> None:
+            """Reset to questionnaire page."""
+            st.session_state.questionnaire_completed = False
+            st.session_state.conversation_finished = False
+            if "user_profile" in st.session_state:
+                del st.session_state.user_profile
+            ChatHistoryManager.clear_history()
+            st.rerun()
 
-            st.info(f"נתונים נשמרו בקובץ: {filename}")
-
-        except Exception as e:
-            st.error(f"שגיאה בשמירת השיחה: {str(e)}")
-            st.exception(e)  # Show full error details
-
-    def _calculate_duration(self, messages: List[Dict]) -> float:
-        """Calculate conversation duration in minutes."""
-        if not messages or len(messages) < 2:
-            return 0.0
-
-        try:
-            start_time = datetime.fromisoformat(messages[0]["timestamp"])
-            end_time = datetime.fromisoformat(messages[-1]["timestamp"])
-            duration = (end_time - start_time).total_seconds() / 60
-            return round(duration, 2)
-        except:
-            return 0.0
-
-    def _reset_to_questionnaire(self) -> None:
-        """Reset to questionnaire page."""
-        st.session_state.questionnaire_completed = False
-        st.session_state.conversation_finished = False
-        if "user_profile" in st.session_state:
-            del st.session_state.user_profile
-        ChatHistoryManager.clear_history()
-        st.rerun()
-
-    def _reset_application(self) -> None:
-        """Reset entire application."""
-        # Clear all session state
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.rerun()
+        def _reset_application(self) -> None:
+            """Reset entire application."""
+            # Clear all session state
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
 
 
 class UIManager:
     """Manages UI components and Hebrew RTL styling."""
 
     @staticmethod
+    def render_header_data_viewer() -> None:
+        st.title("📊 צפייה בנתוני המחקר")
+        st.markdown("**דף ניהול נתונים עבור החוקרים**")
+        st.markdown(
+            '<div style="direction: rtl; text-align: right;">כאן תוכל לראות סטטיסטיקות ותצוגה מקדימה של הנתונים שנשמרו</div>',
+            unsafe_allow_html=True
+        )
+        st.markdown("---")
+
     def configure_page() -> None:
         st.set_page_config(
             page_title="צ'אטבוט פוליטי",
@@ -425,6 +570,13 @@ class SidebarManager:
     def render_sidebar(self) -> None:
         with st.sidebar:
             st.header("⚙️ הגדרות")
+
+            # Data viewer button (for researchers)
+            if st.button("📊 צפייה בנתונים"):
+                st.session_state.show_data_viewer = True
+                st.rerun()
+
+            st.markdown("---")
 
             # Back to questionnaire button
             if st.button("🔙 חזרה לשאלון"):
@@ -551,6 +703,7 @@ class PoliticalChatbot:
         self.ui_manager = UIManager()
         self.questionnaire_manager = QuestionnaireManager()
         self.final_page_manager = FinalPageManager()
+        self.data_viewer_manager = DataViewerManager()
         self.sidebar_manager = SidebarManager()
         self.chat_history = ChatHistoryManager()
         self._gemini_client: Optional[GeminiClient] = None
@@ -561,11 +714,13 @@ class PoliticalChatbot:
 
     def initialize_session_state(self) -> None:
         self.chat_history.initialize_chat_history()
-        # Initialize questionnaire state
+        # Initialize states
         if "questionnaire_completed" not in st.session_state:
             st.session_state.questionnaire_completed = False
         if "conversation_finished" not in st.session_state:
             st.session_state.conversation_finished = False
+        if "show_data_viewer" not in st.session_state:
+            st.session_state.show_data_viewer = False
 
     def _get_api_key(self) -> Optional[str]:
         """Get API key from Streamlit secrets or environment variables."""
@@ -654,8 +809,15 @@ class PoliticalChatbot:
         self.setup_ui()
         self.initialize_session_state()
 
-        # Check conversation flow state
-        if st.session_state.get("conversation_finished", False):
+        # Check application flow state
+        if st.session_state.get("show_data_viewer", False):
+            # Show data viewer
+            self.data_viewer_manager.render_data_viewer()
+            # Add back button
+            if st.button("🔙 חזרה למסך הראשי"):
+                st.session_state.show_data_viewer = False
+                st.rerun()
+        elif st.session_state.get("conversation_finished", False):
             # Show final page
             self.final_page_manager.render_final_page()
         elif not self.questionnaire_manager.is_questionnaire_completed():
