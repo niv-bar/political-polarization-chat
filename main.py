@@ -62,6 +62,65 @@ class UserProfile:
             self.social_distance = {}
 
 
+class MainMenuManager:
+    """Manages the main menu page."""
+
+    def __init__(self):
+        self.ui_manager = UIManager()
+
+    def render_main_menu(self) -> None:
+        """Render the main menu with user and admin options."""
+        self.ui_manager.render_header_main_menu()
+
+        # Create centered layout
+        col1, col2, col3 = st.columns([1, 2, 1])
+
+        with col2:
+            st.markdown("### בחר את הנתיב המתאים:")
+            st.markdown("---")
+
+            # User path
+            st.markdown("#### 👤 משתמש רגיל")
+            st.markdown("השתתף במחקר על קיטוב פוليטי")
+            if st.button("🚀 התחל סקר ושיחה", use_container_width=True, type="primary"):
+                st.session_state.app_mode = "user"
+                st.rerun()
+
+            st.markdown("---")
+
+            # Admin path
+            st.markdown("#### 🔒 מנהל מחקר")
+            st.markdown("גישה לנתוני המחקר (דורש סיסמה)")
+
+            # Password input
+            admin_password = st.text_input(
+                "הזן סיסמת מנהל:",
+                type="password",
+                placeholder="סיסמה..."
+            )
+
+            if st.button("🔓 כניסה למערכת ניהול", use_container_width=True):
+                if self._verify_admin_password(admin_password):
+                    st.session_state.app_mode = "admin"
+                    st.session_state.admin_authenticated = True
+                    st.success("✅ כניסה מוצלחת למערכת ניהול")
+                    st.rerun()
+                else:
+                    st.error("❌ סיסמה שגויה")
+
+        # Footer
+        st.markdown("---")
+        st.markdown(
+            '<div style="direction: rtl; text-align: center; color: gray;">מחקר על קיטוב פוליטי | אוניברסיטה | 2025</div>',
+            unsafe_allow_html=True
+        )
+
+    def _verify_admin_password(self, password: str) -> bool:
+        """Verify admin password."""
+        admin_password = st.secrets.get("ADMIN_PASSWORD", "admin123")
+        return password == admin_password
+
+
 class QuestionnaireManager:
     """Manages the user questionnaire for demographic and political profiling."""
 
@@ -72,37 +131,48 @@ class QuestionnaireManager:
         """Render the questionnaire and return True if completed."""
         self.ui_manager.render_header_questionnaire()
 
+        # Load existing profile if available
+        existing_profile = st.session_state.get("temp_user_profile")
+
         with st.form("user_questionnaire"):
             st.markdown("### 📊 מידע דמוגרפי")
 
-            # Demographic Questions
+            # Demographic Questions with existing values
             gender = st.selectbox(
                 "מגדר:",
                 options=["", "זכר", "נקבה", "אחר", "מעדיף/ה לא לענות"],
+                index=self._get_selectbox_index(["", "זכר", "נקבה", "אחר", "מעדיף/ה לא לענות"],
+                                                existing_profile.gender if existing_profile else ""),
                 help="בחר/י את המגדר שלך"
             )
 
             age = st.number_input(
                 "גיל:",
-                min_value=18, max_value=120, value=25,
+                min_value=18, max_value=120,
+                value=existing_profile.age if existing_profile and existing_profile.age > 0 else 25,
                 help="הזן/י את גילך"
             )
 
             marital_status = st.selectbox(
                 "מצב משפחתי:",
                 options=["", "רווק/ה", "נשוי/אה", "גרוש/ה", "אלמן/ה", "בזוגיות"],
+                index=self._get_selectbox_index(["", "רווק/ה", "נשוי/אה", "גרוש/ה", "אלמן/ה", "בזוגיות"],
+                                                existing_profile.marital_status if existing_profile else ""),
                 help="בחר/י את מצבך המשפחתי"
             )
 
             region = st.selectbox(
                 "אזור מגורים:",
                 options=["", "צפון", "חיפה והצפון", "מרכז", "ירושלים", "דרום", "יהודה ושומרון"],
+                index=self._get_selectbox_index(["", "צפון", "חיפה והצפון", "מרכז", "ירושלים", "דרום", "יהודה ושומרון"],
+                                                existing_profile.region if existing_profile else ""),
                 help="בחר/י את אזור המגורים שלך"
             )
 
             religiosity = st.slider(
                 "רמת דתיות (1=חילוני לגמרי, 10=דתי מאוד):",
-                min_value=1, max_value=10, value=5,
+                min_value=1, max_value=10,
+                value=existing_profile.religiosity if existing_profile else 5,
                 help="דרג/י את רמת הדתיות שלך"
             )
 
@@ -110,13 +180,17 @@ class QuestionnaireManager:
 
             political_stance = st.slider(
                 "עמדה פוליטית (1=שמאל קיצוני, 10=ימין קיצוני):",
-                min_value=1, max_value=10, value=5,
+                min_value=1, max_value=10,
+                value=existing_profile.political_stance if existing_profile else 5,
                 help="איפה אתה ממקם את עצמך בספקטרום הפוליטי?"
             )
 
             protest_participation = st.selectbox(
                 "השתתפות בהפגנות בשנה האחרונה:",
                 options=["", "לא השתתפתי", "השתתפתי מדי פעם", "השתתפתי רבות", "השתתפתי באופן קבוע"],
+                index=self._get_selectbox_index(
+                    ["", "לא השתתפתי", "השתתפתי מדי פעם", "השתתפתי רבות", "השתתפתי באופן קבוע"],
+                    existing_profile.protest_participation if existing_profile else ""),
                 help="באיזו מידה השתתפת בהפגנות?"
             )
 
@@ -124,6 +198,7 @@ class QuestionnaireManager:
                 "מקורות השפעה על דעותיך הפוליטיות:",
                 options=["משפחה", "חברים", "מדיה מסורתית", "רשתות חברתיות", "פוליטיקאים", "אקדמיה",
                          "דת/מנהיגים רוחניים", "ניסיון אישי"],
+                default=existing_profile.influence_sources if existing_profile else [],
                 help="בחר/י את המקורות המשפיעים על דעותיך"
             )
 
@@ -138,7 +213,8 @@ class QuestionnaireManager:
                 with col1 if i % 2 == 0 else col2:
                     feeling_thermometer[party] = st.slider(
                         f"{party}:",
-                        min_value=0, max_value=100, value=50,
+                        min_value=0, max_value=100,
+                        value=existing_profile.feeling_thermometer.get(party, 50) if existing_profile else 50,
                         help=f"איך אתה מרגיש כלפי {party}?"
                     )
 
@@ -157,7 +233,8 @@ class QuestionnaireManager:
             for situation in social_situations:
                 social_distance[situation] = st.slider(
                     f"{situation}:",
-                    min_value=1, max_value=6, value=3,
+                    min_value=1, max_value=6,
+                    value=existing_profile.social_distance.get(situation, 3) if existing_profile else 3,
                     help=f"עד כמה נוח לך ש{situation}?"
                 )
 
@@ -177,31 +254,60 @@ class QuestionnaireManager:
                     st.error("אנא מלא/י את כל השדות הנדרשים או סמן/י 'דלג על שדות חובה'")
                     return False
 
-                # Create user profile with session ID
-                user_profile = UserProfile(
-                    gender=gender,
-                    age=age if age > 18 else 18,  # Ensure minimum age
-                    marital_status=marital_status,
-                    region=region,
-                    religiosity=religiosity,
-                    political_stance=political_stance,
-                    protest_participation=protest_participation,
-                    influence_sources=influence_sources,
-                    feeling_thermometer=feeling_thermometer,
-                    social_distance=social_distance
-                )
+                # Create/update user profile with session ID
+                if existing_profile:
+                    # Update existing profile
+                    existing_profile.gender = gender
+                    existing_profile.age = age if age > 18 else 18
+                    existing_profile.marital_status = marital_status
+                    existing_profile.region = region
+                    existing_profile.religiosity = religiosity
+                    existing_profile.political_stance = political_stance
+                    existing_profile.protest_participation = protest_participation
+                    existing_profile.influence_sources = influence_sources
+                    existing_profile.feeling_thermometer = feeling_thermometer
+                    existing_profile.social_distance = social_distance
+                    user_profile = existing_profile
+                else:
+                    # Create new profile
+                    user_profile = UserProfile(
+                        gender=gender,
+                        age=age if age > 18 else 18,
+                        marital_status=marital_status,
+                        region=region,
+                        religiosity=religiosity,
+                        political_stance=political_stance,
+                        protest_participation=protest_participation,
+                        influence_sources=influence_sources,
+                        feeling_thermometer=feeling_thermometer,
+                        social_distance=social_distance
+                    )
 
-                # Save to session state only (no automatic file saving)
-                self._save_user_profile(user_profile)
+                # Save to temporary session state
+                self._save_temp_user_profile(user_profile)
 
-                st.success(f"פרופיל נשמר בהצלחה! (מזהה: {user_profile.session_id[:8]}) מועבר לצ'אט...")
+                st.success(f"פרופיל נשמר זמנית! (מזהה: {user_profile.session_id[:8]}) מועבר לצ'אט...")
+                st.rerun()
+
+        # Navigation buttons
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🔙 חזרה לתפריט הראשי", use_container_width=True):
+                st.session_state.app_mode = "main_menu"
                 st.rerun()
 
         return False
 
-    def _save_user_profile(self, profile: UserProfile) -> None:
-        """Save user profile to session state only."""
-        st.session_state.user_profile = profile
+    def _get_selectbox_index(self, options: List[str], value: str) -> int:
+        """Get index of value in options list."""
+        try:
+            return options.index(value)
+        except ValueError:
+            return 0
+
+    def _save_temp_user_profile(self, profile: UserProfile) -> None:
+        """Save user profile to temporary session state."""
+        st.session_state.temp_user_profile = profile
         st.session_state.questionnaire_completed = True
 
     def is_questionnaire_completed(self) -> bool:
@@ -301,103 +407,6 @@ class FirestoreManager:
             return []
 
 
-class WelcomePageManager:
-    """Manages the welcome/home page with user type selection."""
-
-    def __init__(self):
-        self.ui_manager = UIManager()
-
-    def render_welcome_page(self) -> None:
-        """Render the main welcome page with user type selection."""
-        self.ui_manager.render_header_welcome()
-
-        # Main content
-        st.markdown("### ברוכים הבאים למחקר על קיטוב פוליטי!")
-        st.markdown(
-            '<div style="direction: rtl; text-align: right;">המחקר בוחן כיצד שיחות עם בוט פוליטי יכולות להשפיע על עמדות ודעות קדומות. ההשתתפות אנונימית ומתבססת על הסכמה.</div>',
-            unsafe_allow_html=True
-        )
-
-        st.markdown("---")
-
-        # Create two columns for user type selection
-        col1, col2, col3 = st.columns([1, 2, 1])
-
-        with col2:
-            # Regular user path
-            st.markdown("### 👥 משתתף במחקר")
-            st.markdown(
-                '<div style="direction: rtl; text-align: right;">התחל/י את השאלון והשיחה עם הבוט הפוליטי</div>',
-                unsafe_allow_html=True
-            )
-
-            if st.button("🚀 התחל מחקר", use_container_width=True, type="primary"):
-                st.session_state.user_type = "participant"
-                st.session_state.show_welcome = False
-                st.rerun()
-
-            st.markdown("---")
-
-            # Admin path
-            st.markdown("### 🔒 כניסת מנהל")
-            st.markdown(
-                '<div style="direction: rtl; text-align: right;">גישה למנהלי המחקר לצפייה בנתונים</div>',
-                unsafe_allow_html=True
-            )
-
-            # Admin password input
-            admin_password = st.text_input(
-                "סיסמת מנהל:",
-                type="password",
-                placeholder="הזן סיסמה",
-                help="סיסמה למנהלי המחקר בלבד"
-            )
-
-            if st.button("🔐 כניסה לניהול", use_container_width=True):
-                if self._verify_admin_password(admin_password):
-                    st.session_state.user_type = "admin"
-                    st.session_state.show_welcome = False
-                    st.session_state.show_data_viewer = True
-                    st.success("✅ כניסה מוצלחת!")
-                    st.rerun()
-                else:
-                    st.error("❌ סיסמה שגויה")
-
-        # Footer info
-        st.markdown("---")
-        st.markdown("### ℹ️ מידע על המחקר")
-        with st.expander("לחץ/י לפרטים נוספים"):
-            st.markdown("""
-            **מטרת המחקר:** בחינת השפעת שיחות עם בוט פוליטי על עמדות ודעות
-
-            **משך ההשתתפות:** כ-15-20 דקות (שאלון + שיחה)
-
-            **פרטיות:** כל הנתונים אנונימיים ומוצפנים
-
-            **זכויות:** ניתן לסיים את ההשתתפות בכל עת
-
-            **איש קשר:** לשאלות ניתן לפנות למנהלי המחקר
-            """)
-
-    def _verify_admin_password(self, password: str) -> bool:
-        """Verify admin password against secrets or environment variable."""
-        try:
-            # Try to get admin password from Streamlit secrets
-            correct_password = st.secrets.get("ADMIN_PASSWORD", "")
-            if correct_password and password == correct_password:
-                return True
-        except Exception:
-            pass
-
-        # Fallback to environment variable
-        correct_password = os.getenv("ADMIN_PASSWORD", "")
-        if correct_password and password == correct_password:
-            return True
-
-        # Default password for development (should be changed in production)
-        return password == "admin123"
-
-
 class DataViewerManager:
     """Manages the data viewer page for researchers."""
 
@@ -408,16 +417,6 @@ class DataViewerManager:
     def render_data_viewer(self) -> None:
         """Render the data viewer page."""
         self.ui_manager.render_header_data_viewer()
-
-        # Admin controls
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("🏠 חזרה למסך הראשי", use_container_width=True):
-                st.session_state.show_data_viewer = False
-                st.session_state.show_welcome = True
-                st.rerun()
-
-        st.markdown("---")
 
         # Show statistics
         st.markdown("### 📊 סטטיסטיקות כלליות")
@@ -442,16 +441,10 @@ class DataViewerManager:
             preview_data = self.firestore_manager.get_conversations_preview()
 
             if preview_data:
-                try:
-                    import pandas as pd
-                    df = pd.DataFrame(preview_data)
-                    df.columns = ['מזהה', 'זמן סיום', 'הודעות', 'אזור', 'גיל']
-                    st.dataframe(df, use_container_width=True)
-                except ImportError:
-                    # Fallback if pandas not available
-                    for i, conv in enumerate(preview_data):
-                        st.write(
-                            f"{i + 1}. מזהה: {conv['session_id']}, הודעות: {conv['total_messages']}, אזור: {conv['user_region']}")
+                import pandas as pd
+                df = pd.DataFrame(preview_data)
+                df.columns = ['מזהה', 'זמן סיום', 'הודעות', 'אזור', 'גיל']
+                st.dataframe(df, use_container_width=True)
             else:
                 st.info("לא ניתן לטעון תצוגה מקדימה של השיחות")
         else:
@@ -470,131 +463,17 @@ class DataViewerManager:
         5. ניתן לייצא לJSON או לחבר ל-Python/R לניתוח
         """)
 
-
-class FinalPageManager:
-    class FinalPageManager:
-        """Manages the final page after conversation completion."""
-
-        def __init__(self):
-            self.ui_manager = UIManager()
-            self.firestore_manager = FirestoreManager()
-
-        def render_final_page(self) -> None:
-            """Render the final page with option to save data."""
-            self.ui_manager.render_header_final()
-
-            # Show conversation summary
-            messages = ChatHistoryManager.get_messages()
-            message_count = len(messages)
-            user_messages = len([m for m in messages if m["role"] == "user"])
-
-            st.markdown("### 📊 סיכום השיחה")
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("סך הודעות", message_count)
-            with col2:
-                st.metric("הודעות משתמש", user_messages)
-            with col3:
-                st.metric("הודעות בוט", message_count - user_messages)
-
-            st.markdown("---")
-
-            # Data saving options
-            st.markdown("### 💾 שמירת נתונים למחקר")
-            st.markdown(
-                '<div style="direction: rtl; text-align: right;">האם תרצה לשמור את נתוני השיחה למחקר על קיטוב פוליטי? הנתונים נשמרים באופן אנונימי במסד נתונים מאובטח.</div>',
-                unsafe_allow_html=True
-            )
-
-            col1, col2, col3 = st.columns([1, 1, 1])
-
-            with col2:
-                if st.button("💾 שמור נתונים למחקר", use_container_width=True, type="primary"):
-                    success = self._save_conversation_data()
-                    if success:
-                        st.success("✅ הנתונים נשמרו בהצלחה במסד הנתונים! תודה על ההשתתפות במחקר.")
-                        st.balloons()
-
-            st.markdown("---")
-
-            # Navigation options
-            st.markdown("### 🔄 אפשרויות נוספות")
-            col1, col2 = st.columns(2)
-
-            with col1:
-                if st.button("🔙 חזרה לשאלון", use_container_width=True):
-                    self._reset_to_questionnaire()
-
-            with col2:
-                if st.button("🏠 התחל מחדש", use_container_width=True):
-                    self._reset_application()
-
-        def _save_conversation_data(self) -> bool:
-            """Save conversation data with user profile to Firestore."""
-            try:
-                # Get user profile and messages
-                profile = st.session_state.get("user_profile")
-                messages = ChatHistoryManager.get_messages()
-
-                if not profile:
-                    st.error("שגיאה: לא נמצא פרופיל משתמש")
-                    return False
-
-                # Check if there are messages to save
-                if len(messages) == 0:
-                    st.warning("אין הודעות לשמירה - השיחה ריקה")
-                    return False
-
-                # Create complete session data
-                session_data = {
-                    "session_id": profile.session_id,
-                    "created_at": profile.created_at,
-                    "finished_at": datetime.now().isoformat(),
-                    "user_profile": asdict(profile),
-                    "conversation": messages,
-                    "conversation_stats": {
-                        "total_messages": len(messages),
-                        "user_messages": len([m for m in messages if m["role"] == "user"]),
-                        "bot_messages": len([m for m in messages if m["role"] == "assistant"]),
-                        "duration_minutes": self._calculate_duration(messages)
-                    }
-                }
-
-                # Save to Firestore
-                return self.firestore_manager.save_conversation_data(session_data)
-
-            except Exception as e:
-                st.error(f"שגיאה בשמירת השיחה: {str(e)}")
-                return False
-
-        def _calculate_duration(self, messages: List[Dict]) -> float:
-            """Calculate conversation duration in minutes."""
-            if not messages or len(messages) < 2:
-                return 0.0
-
-            try:
-                start_time = datetime.fromisoformat(messages[0]["timestamp"])
-                end_time = datetime.fromisoformat(messages[-1]["timestamp"])
-                duration = (end_time - start_time).total_seconds() / 60
-                return round(duration, 2)
-            except:
-                return 0.0
-
-        def _reset_to_questionnaire(self) -> None:
-            """Reset to questionnaire page."""
-            st.session_state.questionnaire_completed = False
-            st.session_state.conversation_finished = False
-            if "user_profile" in st.session_state:
-                del st.session_state.user_profile
-            ChatHistoryManager.clear_history()
-            st.rerun()
-
-        def _reset_application(self) -> None:
-            """Reset entire application."""
-            # Clear all session state
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.rerun()
+        # Navigation
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🔙 חזרה לתפריט הראשי", use_container_width=True):
+                st.session_state.app_mode = "main_menu"
+                st.session_state.admin_authenticated = False
+                st.rerun()
+        with col2:
+            if st.button("🔄 רענן נתונים", use_container_width=True):
+                st.rerun()
 
 
 class FinalPageManager:
@@ -644,21 +523,25 @@ class FinalPageManager:
 
         # Navigation options
         st.markdown("### 🔄 אפשרויות נוספות")
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
 
         with col1:
             if st.button("🔙 חזרה לשאלון", use_container_width=True):
                 self._reset_to_questionnaire()
 
         with col2:
-            if st.button("🏠 התחל מחדש", use_container_width=True):
+            if st.button("🏠 תפריט ראשי", use_container_width=True):
+                self._reset_to_main_menu()
+
+        with col3:
+            if st.button("🔄 התחל מחדש", use_container_width=True):
                 self._reset_application()
 
     def _save_conversation_data(self) -> bool:
         """Save conversation data with user profile to Firestore."""
         try:
-            # Get user profile and messages
-            profile = st.session_state.get("user_profile")
+            # Get temporary user profile and messages
+            profile = st.session_state.get("temp_user_profile")
             messages = ChatHistoryManager.get_messages()
 
             if not profile:
@@ -709,8 +592,14 @@ class FinalPageManager:
         """Reset to questionnaire page."""
         st.session_state.questionnaire_completed = False
         st.session_state.conversation_finished = False
-        if "user_profile" in st.session_state:
-            del st.session_state.user_profile
+        ChatHistoryManager.clear_history()
+        st.rerun()
+
+    def _reset_to_main_menu(self) -> None:
+        """Reset to main menu."""
+        st.session_state.app_mode = "main_menu"
+        st.session_state.questionnaire_completed = False
+        st.session_state.conversation_finished = False
         ChatHistoryManager.clear_history()
         st.rerun()
 
@@ -724,6 +613,16 @@ class FinalPageManager:
 
 class UIManager:
     """Manages UI components and Hebrew RTL styling."""
+
+    @staticmethod
+    def render_header_main_menu() -> None:
+        st.title("🗳️ מערכת מחקר קיטוב פוליטי")
+        st.markdown("**ברוכים הבאים למערכת המחקר**")
+        st.markdown(
+            '<div style="direction: rtl; text-align: right;">מערכת לחקר השפעת שיחות פוליטיות על דעות ועמדות</div>',
+            unsafe_allow_html=True
+        )
+        st.markdown("---")
 
     @staticmethod
     def render_header_data_viewer() -> None:
@@ -779,7 +678,7 @@ class UIManager:
         st.title("📋 שאלון מאפיינים אישיים ופוליטיים")
         st.markdown("**אנא מלא/י את השאלון הבא לפני תחילת השיחה עם הבוט**")
         st.markdown(
-            '<div style="direction: rtl; text-align: right;">המידע נשמר באופן אנונימי ומשמש למחקר על קיטוב פוליטי</div>',
+            '<div style="direction: rtl; text-align: right;">המידע נשמר באופן זמני ורק לאחר סיום השיחה תוכל לבחור האם לשמור למחקר</div>',
             unsafe_allow_html=True
         )
         st.markdown("---")
@@ -809,9 +708,9 @@ class SidebarManager:
         with st.sidebar:
             st.header("⚙️ הגדרות")
 
-            # Data viewer button (for researchers)
-            if st.button("📊 צפייה בנתונים"):
-                st.session_state.show_data_viewer = True
+            # Back to main menu button
+            if st.button("🏠 תפריט ראשי"):
+                st.session_state.app_mode = "main_menu"
                 st.rerun()
 
             st.markdown("---")
@@ -819,8 +718,6 @@ class SidebarManager:
             # Back to questionnaire button
             if st.button("🔙 חזרה לשאלון"):
                 st.session_state.questionnaire_completed = False
-                if "user_profile" in st.session_state:
-                    del st.session_state.user_profile
                 st.rerun()
 
             st.markdown("---")
@@ -939,6 +836,7 @@ class PoliticalChatbot:
 
     def __init__(self):
         self.ui_manager = UIManager()
+        self.main_menu_manager = MainMenuManager()
         self.questionnaire_manager = QuestionnaireManager()
         self.final_page_manager = FinalPageManager()
         self.data_viewer_manager = DataViewerManager()
@@ -953,12 +851,14 @@ class PoliticalChatbot:
     def initialize_session_state(self) -> None:
         self.chat_history.initialize_chat_history()
         # Initialize states
+        if "app_mode" not in st.session_state:
+            st.session_state.app_mode = "main_menu"
         if "questionnaire_completed" not in st.session_state:
             st.session_state.questionnaire_completed = False
         if "conversation_finished" not in st.session_state:
             st.session_state.conversation_finished = False
-        if "show_data_viewer" not in st.session_state:
-            st.session_state.show_data_viewer = False
+        if "admin_authenticated" not in st.session_state:
+            st.session_state.admin_authenticated = False
 
     def _get_api_key(self) -> Optional[str]:
         """Get API key from Streamlit secrets or environment variables."""
@@ -1023,17 +923,17 @@ class PoliticalChatbot:
 
     def _get_user_context(self) -> str:
         """Generate user context from questionnaire data."""
-        if "user_profile" not in st.session_state:
+        temp_profile = st.session_state.get("temp_user_profile")
+        if not temp_profile:
             return ""
 
-        profile = st.session_state.user_profile
         context = f"""
 מידע על המשתמש (להתאמת התגובות):
-- גיל: {profile.age}
-- אזור: {profile.region}  
-- עמדה פוליטית: {profile.political_stance}/10 (1=שמאל, 10=ימין)
-- רמת דתיות: {profile.religiosity}/10
-- השתתפות בהפגנות: {profile.protest_participation}
+- גיל: {temp_profile.age}
+- אזור: {temp_profile.region}  
+- עמדה פוליטית: {temp_profile.political_stance}/10 (1=שמאל, 10=ימין)
+- רמת דתיות: {temp_profile.religiosity}/10
+- השתתפות בהפגנות: {temp_profile.protest_participation}
 
 התאם את התשובות לפרופיל המשתמש תוך שמירה על אובייקטיביות ואיזון.
 """
@@ -1047,34 +947,48 @@ class PoliticalChatbot:
         self.setup_ui()
         self.initialize_session_state()
 
-        # Check application flow state
-        if st.session_state.get("show_data_viewer", False):
-            # Show data viewer
-            self.data_viewer_manager.render_data_viewer()
-            # Add back button
-            if st.button("🔙 חזרה למסך הראשי"):
-                st.session_state.show_data_viewer = False
-                st.rerun()
-        elif st.session_state.get("conversation_finished", False):
-            # Show final page
-            self.final_page_manager.render_final_page()
-        elif not self.questionnaire_manager.is_questionnaire_completed():
-            # Show questionnaire
-            self.questionnaire_manager.render_questionnaire()
-        else:
-            # Show main chatbot
-            self.ui_manager.render_header()
-            self.handle_sidebar()
-            api_key = self._get_api_key()
+        app_mode = st.session_state.get("app_mode", "main_menu")
 
-            if not api_key:
-                self.display_api_key_warning()
+        if app_mode == "main_menu":
+            # Show main menu
+            self.main_menu_manager.render_main_menu()
+
+        elif app_mode == "admin":
+            # Show admin data viewer
+            if st.session_state.get("admin_authenticated", False):
+                self.data_viewer_manager.render_data_viewer()
             else:
-                self.handle_user_input(api_key)
+                st.session_state.app_mode = "main_menu"
+                st.rerun()
+
+        elif app_mode == "user":
+            # User flow
+            if st.session_state.get("conversation_finished", False):
+                # Show final page
+                self.final_page_manager.render_final_page()
+            elif not self.questionnaire_manager.is_questionnaire_completed():
+                # Show questionnaire
+                self.questionnaire_manager.render_questionnaire()
+            else:
+                # Show main chatbot
+                self.ui_manager.render_header()
+                self.handle_sidebar()
+                api_key = self._get_api_key()
+
+                if not api_key:
+                    self.display_api_key_warning()
+                else:
+                    self.handle_user_input(api_key)
 
 
 def main() -> None:
     """Application entry point."""
+    st.set_page_config(
+        page_title="צ'אטבוט פוליטי",
+        page_icon="🗳️",
+        layout="wide"
+    )
+
     chatbot = PoliticalChatbot()
     chatbot.run()
 
