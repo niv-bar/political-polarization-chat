@@ -81,7 +81,7 @@ class MainMenuManager:
 
             # User path
             st.markdown("#### 👤 משתמש רגיל")
-            st.markdown("השתתף במחקר על קיטוב פוليטי")
+            st.markdown("השתתף במחקר על קיטוב פוליטי")
             if st.button("🚀 התחל סקר ושיחה", use_container_width=True, type="primary"):
                 st.session_state.app_mode = "user"
                 st.rerun()
@@ -117,8 +117,15 @@ class MainMenuManager:
 
     def _verify_admin_password(self, password: str) -> bool:
         """Verify admin password."""
-        admin_password = st.secrets.get("ADMIN_PASSWORD", "admin123")
-        return password == admin_password
+        try:
+            admin_password = st.secrets["ADMIN_PASSWORD"]
+            return password == admin_password
+        except KeyError:
+            st.error("❌ סיסמת מנהל לא מוגדרת במערכת")
+            return False
+        except Exception as e:
+            st.error(f"❌ שגיאה בקריאת סיסמת המנהל: {str(e)}")
+            return False
 
 
 class QuestionnaireManager:
@@ -634,6 +641,7 @@ class UIManager:
         )
         st.markdown("---")
 
+    @staticmethod
     def configure_page() -> None:
         st.set_page_config(
             page_title="צ'אטבוט פוליטי",
@@ -646,6 +654,7 @@ class UIManager:
         """Apply comprehensive Hebrew RTL styling."""
         rtl_css = """
         <style>
+            /* Main content RTL */
             .main .block-container {direction: rtl;}
             .stChatMessage {direction: rtl; text-align: right;}
             .stChatMessage > div {direction: rtl; text-align: right;}
@@ -664,6 +673,37 @@ class UIManager:
             .stNumberInput > label {direction: rtl; text-align: right;}
             .stMetric {direction: rtl; text-align: right;}
             h1, h2, h3, h4, h5, h6 {direction: rtl; text-align: right;}
+
+            /* Sidebar positioning to the right */
+            .css-1d391kg {order: 2;}
+            .main > div {order: 1;}
+
+            /* Alternative sidebar selectors (different Streamlit versions) */
+            section[data-testid="stSidebar"] {
+                left: unset !important;
+                right: 0 !important;
+            }
+
+            .css-1lcbmhc {
+                left: unset !important;
+                right: 0 !important;
+            }
+
+            /* Sidebar content RTL */
+            .css-1d391kg {direction: rtl; text-align: right;}
+            section[data-testid="stSidebar"] > div {direction: rtl; text-align: right;}
+            section[data-testid="stSidebar"] .stButton > button {direction: rtl; text-align: right;}
+            section[data-testid="stSidebar"] h1, 
+            section[data-testid="stSidebar"] h2, 
+            section[data-testid="stSidebar"] h3 {direction: rtl; text-align: right;}
+
+            /* Main content margin adjustment for right sidebar */
+            .main {margin-right: 21rem; margin-left: 1rem;}
+
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .main {margin-right: 1rem;}
+            }
         </style>
         """
         st.markdown(rtl_css, unsafe_allow_html=True)
