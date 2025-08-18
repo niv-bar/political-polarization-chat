@@ -484,6 +484,131 @@ class FinalPageManager:
             st.rerun()
 
 
+class FinalPageManager:
+    """Manages the final page after conversation completion."""
+
+    def __init__(self):
+        self.ui_manager = UIManager()
+        self.firestore_manager = FirestoreManager()
+
+    def render_final_page(self) -> None:
+        """Render the final page with option to save data."""
+        self.ui_manager.render_header_final()
+
+        # Show conversation summary
+        messages = ChatHistoryManager.get_messages()
+        message_count = len(messages)
+        user_messages = len([m for m in messages if m["role"] == "user"])
+
+        st.markdown("### 📊 סיכום השיחה")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("סך הודעות", message_count)
+        with col2:
+            st.metric("הודעות משתמש", user_messages)
+        with col3:
+            st.metric("הודעות בוט", message_count - user_messages)
+
+        st.markdown("---")
+
+        # Data saving options
+        st.markdown("### 💾 שמירת נתונים למחקר")
+        st.markdown(
+            '<div style="direction: rtl; text-align: right;">האם תרצה לשמור את נתוני השיחה למחקר על קיטוב פוליטי? הנתונים נשמרים באופן אנונימי במסד נתונים מאובטח.</div>',
+            unsafe_allow_html=True
+        )
+
+        col1, col2, col3 = st.columns([1, 1, 1])
+
+        with col2:
+            if st.button("💾 שמור נתונים למחקר", use_container_width=True, type="primary"):
+                success = self._save_conversation_data()
+                if success:
+                    st.success("✅ הנתונים נשמרו בהצלחה במסד הנתונים! תודה על ההשתתפות במחקר.")
+                    st.balloons()
+
+        st.markdown("---")
+
+        # Navigation options
+        st.markdown("### 🔄 אפשרויות נוספות")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("🔙 חזרה לשאלון", use_container_width=True):
+                self._reset_to_questionnaire()
+
+        with col2:
+            if st.button("🏠 התחל מחדש", use_container_width=True):
+                self._reset_application()
+
+    def _save_conversation_data(self) -> bool:
+        """Save conversation data with user profile to Firestore."""
+        try:
+            # Get user profile and messages
+            profile = st.session_state.get("user_profile")
+            messages = ChatHistoryManager.get_messages()
+
+            if not profile:
+                st.error("שגיאה: לא נמצא פרופיל משתמש")
+                return False
+
+            # Check if there are messages to save
+            if len(messages) == 0:
+                st.warning("אין הודעות לשמירה - השיחה ריקה")
+                return False
+
+            # Create complete session data
+            session_data = {
+                "session_id": profile.session_id,
+                "created_at": profile.created_at,
+                "finished_at": datetime.now().isoformat(),
+                "user_profile": asdict(profile),
+                "conversation": messages,
+                "conversation_stats": {
+                    "total_messages": len(messages),
+                    "user_messages": len([m for m in messages if m["role"] == "user"]),
+                    "bot_messages": len([m for m in messages if m["role"] == "assistant"]),
+                    "duration_minutes": self._calculate_duration(messages)
+                }
+            }
+
+            # Save to Firestore
+            return self.firestore_manager.save_conversation_data(session_data)
+
+        except Exception as e:
+            st.error(f"שגיאה בשמירת השיחה: {str(e)}")
+            return False
+
+    def _calculate_duration(self, messages: List[Dict]) -> float:
+        """Calculate conversation duration in minutes."""
+        if not messages or len(messages) < 2:
+            return 0.0
+
+        try:
+            start_time = datetime.fromisoformat(messages[0]["timestamp"])
+            end_time = datetime.fromisoformat(messages[-1]["timestamp"])
+            duration = (end_time - start_time).total_seconds() / 60
+            return round(duration, 2)
+        except:
+            return 0.0
+
+    def _reset_to_questionnaire(self) -> None:
+        """Reset to questionnaire page."""
+        st.session_state.questionnaire_completed = False
+        st.session_state.conversation_finished = False
+        if "user_profile" in st.session_state:
+            del st.session_state.user_profile
+        ChatHistoryManager.clear_history()
+        st.rerun()
+
+    def _reset_application(self) -> None:
+        """Reset entire application."""
+        # Clear all session state
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+
 class UIManager:
     """Manages UI components and Hebrew RTL styling."""
 
