@@ -497,6 +497,7 @@ class UIManager:
         )
         st.markdown("---")
 
+    @staticmethod
     def configure_page() -> None:
         st.set_page_config(
             page_title="צ'אטבוט פוליטי",
@@ -709,7 +710,7 @@ class PoliticalChatbot:
         self._gemini_client: Optional[GeminiClient] = None
 
     def setup_ui(self) -> None:
-        self.ui_manager.configure_page()
+        # Page config is now handled in main(), just apply styling
         self.ui_manager.apply_rtl_styling()
 
     def initialize_session_state(self) -> None:
