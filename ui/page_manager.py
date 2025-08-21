@@ -180,8 +180,8 @@ class PageManager:
 
         region = st.selectbox(
             "אזור מגורים:",
-            options=["", "צפון", "חיפה והצפון", "מרכז", "ירושלים", "דרום", "יהודה ושומרון"],
-            index=self.ui.get_selectbox_index(["", "צפון", "חיפה והצפון", "מרכז", "ירושלים", "דרום", "יהודה ושומרון"],
+            options=["", "צפון", "מרכז", "ירושלים", "דרום", "יהודה ושומרון"],
+            index=self.ui.get_selectbox_index(["", "צפון", "מרכז", "ירושלים", "דרום", "יהודה ושומרון"],
                                               existing_profile.region if existing_profile else "")
         )
 
@@ -294,11 +294,11 @@ class PageManager:
         with st.sidebar:
             st.header("⚙️ הגדרות")
 
-            if st.button("🏠 תפריט ראשי"):
-                st.session_state.app_mode = "main_menu"
-                st.rerun()
-
-            st.markdown("---")
+            # if st.button("🏠 תפריט ראשי"):
+            #     st.session_state.app_mode = "main_menu"
+            #     st.rerun()
+            #
+            # st.markdown("---")
 
             if st.button("🔙 חזרה לשאלון"):
                 st.session_state.questionnaire_completed = False
@@ -310,11 +310,11 @@ class PageManager:
                 st.session_state.conversation_finished = True
                 st.rerun()
 
-            st.markdown("---")
-
-            if st.button("🗑️ נקה היסטוריית שיחה"):
-                self._clear_chat_history()
-                st.rerun()
+            # st.markdown("---")
+            #
+            # if st.button("🗑️ נקה היסטוריית שיחה"):
+            #     self._clear_chat_history()
+            #     st.rerun()
 
     def _render_chat_history(self) -> None:
         """Render chat history."""

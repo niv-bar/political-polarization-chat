@@ -30,6 +30,79 @@ class UIComponents:
             .stMetric {direction: rtl; text-align: right;}
             h1, h2, h3, h4, h5, h6 {direction: rtl; text-align: right;}
 
+            /* Text inputs */
+            div[data-testid="stTextInput"] {direction: rtl;}
+            div[data-testid="stTextInput"] label {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            div[data-testid="stTextInput"] input {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            div[data-testid="stTextInput"] input::placeholder {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            .stTextInput > label {direction: rtl; text-align: right;}
+            .stTextInput input {direction: rtl; text-align: right !important;}
+
+            /* Selectbox - Force RTL only on content, not structure */
+            div[data-testid="stSelectbox"] {direction: rtl;}
+            div[data-testid="stSelectbox"] label {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            /* Dropdown options */
+            div[role="listbox"],
+            div[role="option"],
+            ul[role="listbox"],
+            li[role="option"] {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            /* Selectbox content */
+            .stSelectbox > div > div > div > div {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+
+            /* Multiselect */
+            div[data-testid="stMultiSelect"] {direction: rtl;}
+            div[data-testid="stMultiSelect"] label {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+
+            /* Slider - EXCLUDE from global RTL to preserve functionality */
+            div[data-testid="stSlider"] {
+                direction: ltr !important; /* Keep LTR for proper slider function */
+            }
+            div[data-testid="stSlider"] label {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            /* Slider track and thumb should stay LTR */
+            .stSlider > div > div > div > div {
+                direction: ltr !important;
+            }
+            /* Slider values */
+            .stSlider .stMarkdown {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+
+            /* Number input */
+            div[data-testid="stNumberInput"] {direction: rtl;}
+            div[data-testid="stNumberInput"] label {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            div[data-testid="stNumberInput"] input {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+
             /* Sidebar positioning to the right */
             .css-1d391kg {order: 2;}
             .main > div {order: 1;}
