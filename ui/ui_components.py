@@ -260,3 +260,28 @@ class UIComponents:
         for i, (label, value) in enumerate(metrics):
             with cols[i]:
                 st.metric(label, value)
+
+    @staticmethod
+    def render_streaming_response(text: str) -> None:
+        """Render streaming response with RTL formatting and typing indicator."""
+        if text.strip():
+            st.markdown(
+                f'<div style="direction: rtl; text-align: right;">{text}<span class="typing-cursor">|</span></div>',
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown("🔍 כותב תגובה...")
+
+    @staticmethod
+    def add_typing_animation() -> None:
+        """Add minimal CSS for better performance."""
+        st.markdown("""
+        <style>
+        .streaming-text {
+            direction: rtl !important;
+            text-align: right !important;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+        </style>
+        """, unsafe_allow_html=True)

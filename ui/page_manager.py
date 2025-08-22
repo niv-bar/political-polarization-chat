@@ -205,7 +205,8 @@ class PageManager:
             "מקורות השפעה על דעותיך הפוליטיות:",
             options=["משפחה", "חברים", "מדיה מסורתית", "רשתות חברתיות", "פוליטיקאים", "אקדמיה",
                      "דת/מנהיגים רוחניים", "ניסיון אישי"],
-            default=existing_profile.influence_sources if existing_profile else []
+            default=existing_profile.influence_sources if existing_profile else [],
+            placeholder="בחירה מרובה"
         )
 
         # Polarization measurements
@@ -319,21 +320,53 @@ class PageManager:
                 self.ui.render_rtl_message(message["content"])
 
     def _handle_user_input(self, prompt: str) -> None:
-        """Handle user input and generate AI response."""
+        """Handle user input with minimal delays."""
+        import time
+        import random
+
         # Add user message
         self._add_message("user", prompt)
         with st.chat_message("user"):
             self.ui.render_rtl_message(prompt)
 
-        # Generate AI response
+        # Generate response with minimal thinking simulation
         with st.chat_message("assistant"):
-            with self.ui.show_loading("🔍 מחפש מידע עדכני..."):
-                user_profile = st.session_state.get("temp_user_profile")
+            response_placeholder = st.empty()
+            user_profile = st.session_state.get("temp_user_profile")
+
+            # Single quick thinking message
+            thinking_options = ["🤔 חושב..."]
+            thinking_msg = random.choice(thinking_options)
+
+            response_placeholder.markdown(
+                f'<div class="streaming-text">{thinking_msg}</div>',
+                unsafe_allow_html=True
+            )
+            time.sleep(0.5)  # Single short delay
+
+            # Get the real response
+            full_response = ""
+            try:
                 chat_context = self._get_chat_context()
 
-                response_text = self.ai_service.generate_response(prompt, user_profile, chat_context)
-                self.ui.render_rtl_message(response_text)
-                self._add_message("assistant", response_text)
+                for chunk in self.ai_service.generate_response_stream(prompt, user_profile, chat_context):
+                    if chunk and chunk.strip():
+                        full_response += chunk
+                        response_placeholder.markdown(
+                            f'<div class="streaming-text">{full_response}</div>',
+                            unsafe_allow_html=True
+                        )
+
+                if full_response:
+                    self._add_message("assistant", full_response)
+
+            except Exception as e:
+                error_msg = f"❌ שגיאה: {str(e)}"
+                response_placeholder.markdown(
+                    f'<div class="streaming-text">{error_msg}</div>',
+                    unsafe_allow_html=True
+                )
+                self._add_message("assistant", error_msg)
 
     def _render_conversation_summary(self) -> None:
         """Render conversation summary."""
