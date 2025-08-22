@@ -5,7 +5,7 @@ from typing import Optional, Generator
 from models import UserProfile
 
 class AIService:
-    """Handles AI interactions with optimized streaming."""
+    """Handles AI interactions with streaming responses."""
 
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -22,7 +22,7 @@ class AIService:
 
     def generate_response_stream(self, prompt: str, user_profile: Optional[UserProfile] = None,
                                  chat_context: str = "") -> Generator[str, None, None]:
-        """Generate optimized streaming response with latest model."""
+        """Generate optimized streaming response."""
         if not self._client:
             yield "❌ שגיאה: הלקוח לא מוכן"
             return
@@ -30,25 +30,24 @@ class AIService:
         try:
             enhanced_prompt = self._build_prompt(prompt, user_profile, chat_context)
 
-            # Optimized configuration for fastest response
+            # Optimized configuration
             config = types.GenerateContentConfig(
                 tools=[types.Tool(google_search=types.GoogleSearch())],
-                temperature=1,
-                top_p=0.8,
+                temperature=0.7,
+                top_p=0.85,
                 top_k=30,
-                max_output_tokens=2000,
+                max_output_tokens=2500,
                 candidate_count=1,
-                system_instruction=self._build_system_instruction(user_profile)
             )
 
-            # Use latest fastest model
+            # Start streaming
             response_stream = self._client.models.generate_content_stream(
-                model="gemini-2.0-flash-exp",  # Latest and fastest model
+                model="gemini-2.5-flash",
                 contents=enhanced_prompt,
                 config=config,
             )
 
-            # Yield chunks immediately
+            # Yield chunks
             for chunk in response_stream:
                 if hasattr(chunk, 'text') and chunk.text:
                     yield chunk.text
@@ -56,34 +55,19 @@ class AIService:
         except Exception as e:
             yield f"❌ שגיאה ב-Gemini: {str(e)}"
 
-    def _build_system_instruction(self, user_profile: Optional[UserProfile]) -> str:
-        """Build system instruction with user context."""
-        instruction = """אתה עוזר AI חכם ומנומס שמתמחה בנושאים פוליטיים ישראליים. 
-השב תמיד בעברית. השתמש בחיפוש באינטרנט למידע עדכני כשנדרש.
-היה אובייקטיבי ומאוזן, הצג נקודות מבט שונות בנושאים מורכבים."""
-
-        if user_profile:
-            instruction += f"""
-
-מידע על המשתמש:
-- גיל: {user_profile.age}, אזור: {user_profile.region}
-- עמדה פוליטית: {user_profile.political_stance}/10 (1=שמאל, 10=ימין)
-- רמת דתיות: {user_profile.religiosity}/10
-
-התאם את התגובות לפרופיל המשתמש תוך שמירה על אובייקטיביות."""
-
-        return instruction
-
     def _build_prompt(self, prompt: str, user_profile: Optional[UserProfile],
                      chat_context: str) -> str:
         """Build optimized prompt."""
-        parts = ["השב בעברית ובאופן מהיר ומדויק."]
+        parts = ["השב בעברית. חפש מידע עדכני אם נדרש."]
+
+        if user_profile:
+            parts.append(f"משתמש: גיל {user_profile.age}, אזור {user_profile.region}, עמדה פוליטית {user_profile.political_stance}/10")
 
         if chat_context:
-            # Limit to last 3 exchanges only for speed
+            # Limit to last 4 exchanges only
             context_lines = chat_context.split('\n\n')
-            recent_context = '\n\n'.join(context_lines[-6:])
-            parts.append(f"הקשר אחרון: {recent_context}")
+            recent_context = '\n\n'.join(context_lines[-8:])
+            parts.append(f"הקשר: {recent_context}")
 
         parts.append(f"שאלה: {prompt}")
         return "\n\n".join(parts)

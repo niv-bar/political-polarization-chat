@@ -320,7 +320,7 @@ class PageManager:
                 self.ui.render_rtl_message(message["content"])
 
     def _handle_user_input(self, prompt: str) -> None:
-        """Handle user input with minimal delays."""
+        """Handle user input with Live API streaming."""
         import time
         import random
 
@@ -329,29 +329,35 @@ class PageManager:
         with st.chat_message("user"):
             self.ui.render_rtl_message(prompt)
 
-        # Generate response with minimal thinking simulation
+        # Generate response with Live API
         with st.chat_message("assistant"):
             response_placeholder = st.empty()
             user_profile = st.session_state.get("temp_user_profile")
 
-            # Single quick thinking message
-            thinking_options = ["🤔 חושב..."]
+            # Minimal thinking message
+            thinking_options = ["🤔 מתחבר...", "⚡ Live API...", "🔍 מחפש..."]
             thinking_msg = random.choice(thinking_options)
 
             response_placeholder.markdown(
                 f'<div class="streaming-text">{thinking_msg}</div>',
                 unsafe_allow_html=True
             )
-            time.sleep(0.5)  # Single short delay
 
             # Get the real response
             full_response = ""
             try:
                 chat_context = self._get_chat_context()
+                first_chunk = True
 
                 for chunk in self.ai_service.generate_response_stream(prompt, user_profile, chat_context):
                     if chunk and chunk.strip():
-                        full_response += chunk
+                        if first_chunk:
+                            # Clear thinking message on first real response
+                            full_response = chunk
+                            first_chunk = False
+                        else:
+                            full_response += chunk
+
                         response_placeholder.markdown(
                             f'<div class="streaming-text">{full_response}</div>',
                             unsafe_allow_html=True
