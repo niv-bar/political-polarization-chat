@@ -7,7 +7,7 @@ class UIComponents:
 
     @staticmethod
     def apply_rtl_styling() -> None:
-        """Apply comprehensive Hebrew RTL styling."""
+        """Apply comprehensive Hebrew RTL styling with mobile responsiveness."""
         rtl_css = """
         <style>
             /* Main content RTL */
@@ -103,27 +103,102 @@ class UIComponents:
                 text-align: right !important;
             }
 
-            /* Sidebar positioning to the right */
-            .css-1d391kg {order: 2;}
-            .main > div {order: 1;}
-            section[data-testid="stSidebar"] {
-                left: unset !important;
-                right: 0 !important;
-            }
-            .css-1lcbmhc {
-                left: unset !important;
-                right: 0 !important;
-            }
-            .css-1d391kg {direction: rtl; text-align: right;}
-            section[data-testid="stSidebar"] > div {direction: rtl; text-align: right;}
-            section[data-testid="stSidebar"] .stButton > button {direction: rtl; text-align: right;}
-            section[data-testid="stSidebar"] h1, 
-            section[data-testid="stSidebar"] h2, 
-            section[data-testid="stSidebar"] h3 {direction: rtl; text-align: right;}
-            .main {margin-right: 21rem; margin-left: 1rem;}
+            /* Desktop Sidebar - Right side */
+            @media (min-width: 769px) {
+                .css-1d391kg {order: 2;}
+                .main > div {order: 1;}
+                section[data-testid="stSidebar"] {
+                    left: unset !important;
+                    right: 0 !important;
+                }
+                .css-1lcbmhc {
+                    left: unset !important;
+                    right: 0 !important;
+                }
+                .css-1d391kg {direction: rtl; text-align: right;}
+                section[data-testid="stSidebar"] > div {direction: rtl; text-align: right;}
+                section[data-testid="stSidebar"] .stButton > button {direction: rtl; text-align: right;}
+                section[data-testid="stSidebar"] h1, 
+                section[data-testid="stSidebar"] h2, 
+                section[data-testid="stSidebar"] h3 {direction: rtl; text-align: right;}
+                .main {margin-right: 21rem; margin-left: 1rem;}
 
+                /* Sidebar buttons full width on desktop */
+                section[data-testid="stSidebar"] .stButton > button {
+                    width: 100%;
+                    margin-bottom: 0.5rem;
+                }
+            }
+
+            /* Mobile Sidebar - Collapsible, normal position */
             @media (max-width: 768px) {
-                .main {margin-right: 1rem;}
+                .main {
+                    margin-right: 1rem !important;
+                    margin-left: 1rem !important;
+                }
+
+                /* Mobile sidebar styling */
+                section[data-testid="stSidebar"] {
+                    direction: rtl;
+                    text-align: right;
+                }
+
+                section[data-testid="stSidebar"] .stButton > button {
+                    width: 100%;
+                    margin-bottom: 0.5rem;
+                    font-size: 0.9rem;
+                    padding: 0.5rem;
+                }
+
+                section[data-testid="stSidebar"] h1,
+                section[data-testid="stSidebar"] h2,
+                section[data-testid="stSidebar"] h3 {
+                    direction: rtl;
+                    text-align: right;
+                    font-size: 1.2rem;
+                }
+
+                /* Better mobile chat input */
+                div[data-testid="stChatInput"] {
+                    margin-bottom: 1rem;
+                }
+
+                /* Mobile-optimized buttons */
+                .stButton > button {
+                    min-height: 44px; /* Touch-friendly height */
+                    font-size: 1rem;
+                }
+            }
+
+            /* Extra small screens */
+            @media (max-width: 480px) {
+                .main .block-container {
+                    padding-left: 0.5rem;
+                    padding-right: 0.5rem;
+                }
+
+                /* Smaller text on mobile */
+                h1 {font-size: 1.8rem;}
+                h2 {font-size: 1.5rem;}
+                h3 {font-size: 1.3rem;}
+
+                /* Mobile-friendly form elements */
+                .stSelectbox, .stSlider, .stNumberInput {
+                    margin-bottom: 1rem;
+                }
+            }
+
+            /* Chat message mobile optimization */
+            @media (max-width: 768px) {
+                .stChatMessage {
+                    margin-bottom: 1rem;
+                    padding: 0.5rem;
+                }
+
+                .stChatMessage > div {
+                    font-size: 0.95rem;
+                    line-height: 1.4;
+                }
             }
         </style>
         """
@@ -136,6 +211,12 @@ class UIComponents:
             f'<div style="direction: rtl; text-align: right;">{content}</div>',
             unsafe_allow_html=True
         )
+
+    @staticmethod
+    def render_mobile_header(title: str) -> None:
+        """Render mobile-optimized header."""
+        st.markdown(f"## {title}")
+        st.markdown("---")
 
     @staticmethod
     def render_header(title: str, subtitle: str = "", description: str = "") -> None:

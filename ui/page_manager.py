@@ -290,31 +290,26 @@ class PageManager:
         st.session_state.questionnaire_completed = True
 
     def _render_sidebar(self) -> None:
-        """Render sidebar controls."""
+        """Render responsive sidebar controls."""
         with st.sidebar:
             st.header("⚙️ הגדרות")
 
-            # if st.button("🏠 תפריט ראשי"):
-            #     st.session_state.app_mode = "main_menu"
-            #     st.rerun()
-            #
-            # st.markdown("---")
+            # Mobile-friendly spacing
+            st.markdown("")
 
-            if st.button("🔙 חזרה לשאלון"):
+            if st.button("🔙 חזרה לשאלון", use_container_width=True, help="חזור לשאלון הדמוגרפי"):
                 st.session_state.questionnaire_completed = False
                 st.rerun()
 
             st.markdown("---")
 
-            if st.button("✅ סיים שיחה"):
+            if st.button("✅ סיים שיחה", use_container_width=True, type="primary", help="סיים את השיחה ועבור לסיכום"):
                 st.session_state.conversation_finished = True
                 st.rerun()
 
-            # st.markdown("---")
-            #
-            # if st.button("🗑️ נקה היסטוריית שיחה"):
-            #     self._clear_chat_history()
-            #     st.rerun()
+            # Mobile info section
+            st.markdown("---")
+            st.caption("💡 טיפ: בנייד, החלק למטה כדי לראות את כל ההודעות")
 
     def _render_chat_history(self) -> None:
         """Render chat history."""
