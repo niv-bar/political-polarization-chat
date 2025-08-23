@@ -25,8 +25,8 @@ class PoliticalChatbotApp:
     def _configure_page(self) -> None:
         """Configure Streamlit page settings."""
         st.set_page_config(
-            page_title="צ'אטבוט פוליטי",
-            page_icon="🗳️",
+            page_title="מחקר אקדמי - דעות ועמדות בחברה",
+            page_icon="🔬",
             layout="wide"
         )
         self.ui.apply_rtl_styling()
@@ -44,6 +44,8 @@ class PoliticalChatbotApp:
             st.session_state.questionnaire_completed = False
         if "conversation_finished" not in st.session_state:
             st.session_state.conversation_finished = False
+        if "post_questionnaire_completed" not in st.session_state:
+            st.session_state.post_questionnaire_completed = False
         if "admin_authenticated" not in st.session_state:
             st.session_state.admin_authenticated = False
 
@@ -89,28 +91,36 @@ class PoliticalChatbotApp:
             self._handle_user_flow()
 
     def _handle_user_flow(self) -> None:
-        """Handle the user flow (questionnaire -> chat -> final page)."""
-        if st.session_state.get("conversation_finished", False):
-            # Show final page
-            self.page_manager.render_final_page()
+        """Handle the complete user research flow."""
+        # Check if post-questionnaire is completed (final stage)
+        if st.session_state.get("post_questionnaire_completed", False):
+            # הכפתורים הסופיים כבר מוצגים ב-render_post_chat_questionnaire
+            # לא צריך עמוד נפרד - פשוט נשאר בשאלון הסיכום
+            self.page_manager.render_post_chat_questionnaire()
 
+        # Check if conversation is finished but post-questionnaire not completed
+        elif st.session_state.get("conversation_finished", False):
+            # Show post-chat questionnaire
+            self.page_manager.render_post_chat_questionnaire()
+
+        # Check if initial questionnaire is not completed
         elif not self._is_questionnaire_completed():
-            # Show questionnaire
+            # Show initial questionnaire
             self.page_manager.render_questionnaire()
 
         else:
             # Show main chat interface
             if not self.ai_service:
-                st.error("❌ מפתח API לא נמצא ברכיבי המערכת")
-                st.markdown("אנא וודא שמפתח ה-API מוגדר נכון ברכיבי המערכת")
+                st.error("❌ שירות הבינה המלאכותית אינו זמין כעת")
+                st.markdown("אנא נסה שוב מאוחר יותר או פנה למנהלי המחקר")
 
                 # Navigation back to main menu
-                if st.button("🔙 חזרה לתפריט הראשי", use_container_width=True):
+                if st.button("← חזרה לדף הבית", use_container_width=True):
                     st.session_state.app_mode = "main_menu"
                     st.rerun()
             else:
                 self.page_manager.render_chat_interface()
 
     def _is_questionnaire_completed(self) -> bool:
-        """Check if questionnaire is completed."""
+        """Check if initial questionnaire is completed."""
         return st.session_state.get("questionnaire_completed", False)

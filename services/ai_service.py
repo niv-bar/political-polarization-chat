@@ -59,18 +59,23 @@ class AIService:
     def _build_system_instruction(self, user_profile: Optional[UserProfile]) -> str:
         """Build system instruction with user context."""
         instruction = """אתה עוזר AI חכם ומנומס שמתמחה בנושאים פוליטיים ישראליים. 
-השב תמיד בעברית. השתמש בחיפוש באינטרנט למידע עדכני כשנדרש.
-היה אובייקטיבי ומאוזן, הצג נקודות מבט שונות בנושאים מורכבים."""
+    השב תמיד בעברית. השתמש בחיפוש באינטרנט למידע עדכני כשנדרש.
+    היה אובייקטיבי ומאוזן, הצג נקודות מבט שונות בנושאים מורכבים."""
 
         if user_profile:
             instruction += f"""
 
-מידע על המשתמש:
-- גיל: {user_profile.age}, אזור: {user_profile.region}
-- עמדה פוליטית: {user_profile.political_stance}/10 (1=שמאל, 10=ימין)
-- רמת דתיות: {user_profile.religiosity}/10
+    מידע על המשתמש:
+    - גיל: {user_profile.age}, אזור: {user_profile.region}, השכלה: {user_profile.education}
+    - עמדה פוליטית: {user_profile.political_stance}/10 (1=שמאל, 10=ימין)
+    - רמת דתיות: {user_profile.religiosity}/10
+    - השתתפות בהפגנות: {user_profile.protest_participation}
+    - תדירות הצבעה: {user_profile.voting_frequency}
+    - דיונים פוליטיים: {user_profile.political_discussions}
+    - אמון במערכת: {user_profile.trust_political_system}/10
+    - חרדה פוליטית: {user_profile.political_anxiety}/10
 
-התאם את התגובות לפרופיל המשתמש תוך שמירה על אובייקטיביות."""
+    התאם את התגובות לפרופיל המשתמש תוך שמירה על אובייקטיביות."""
 
         return instruction
 

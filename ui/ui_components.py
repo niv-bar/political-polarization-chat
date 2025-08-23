@@ -30,6 +30,30 @@ class UIComponents:
             .stMetric {direction: rtl; text-align: right;}
             h1, h2, h3, h4, h5, h6 {direction: rtl; text-align: right;}
 
+            /* Text area RTL */
+            div[data-testid="stTextArea"] {direction: rtl;}
+            div[data-testid="stTextArea"] label {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            div[data-testid="stTextArea"] textarea {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            div[data-testid="stTextArea"] textarea::placeholder {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            .stTextArea > label {direction: rtl; text-align: right;}
+            .stTextArea textarea {
+                direction: rtl !important; 
+                text-align: right !important;
+            }
+            .stTextArea textarea::placeholder {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+
             /* Text inputs */
             div[data-testid="stTextInput"] {direction: rtl;}
             div[data-testid="stTextInput"] label {
@@ -70,6 +94,35 @@ class UIComponents:
             /* Multiselect */
             div[data-testid="stMultiSelect"] {direction: rtl;}
             div[data-testid="stMultiSelect"] label {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+
+            /* Checkbox */
+            div[data-testid="stCheckbox"] {direction: rtl;}
+            div[data-testid="stCheckbox"] label {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            .stCheckbox > label {direction: rtl; text-align: right;}
+
+            /* Captions */
+            .stCaption {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            div[data-testid="caption"] {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+
+            /* Forms */
+            .stForm {direction: rtl; text-align: right;}
+            .stForm > div {direction: rtl; text-align: right;}
+
+            /* Form submit button */
+            div[data-testid="stFormSubmitButton"] {direction: rtl;}
+            div[data-testid="stFormSubmitButton"] button {
                 direction: rtl !important;
                 text-align: right !important;
             }
@@ -244,7 +297,7 @@ class UIComponents:
         """Render application footer."""
         st.markdown("---")
         st.markdown(
-            '<div style="direction: rtl; text-align: center; color: gray;">מחקר על קיטוב פוליטי | אוניברסיטה | 2025</div>',
+            '<div style="direction: rtl; text-align: center; color: gray;">אוניברסיטת רייכמן | 2025</div>',
             unsafe_allow_html=True
         )
 
