@@ -474,7 +474,7 @@ class PageManager:
             trust_political_system_post = st.slider(
                 "רמת האמון במוסדות הציבוריים כעת:",
                 min_value=1, max_value=10,
-                value=existing_profile.trust_political_system,
+                value=5,
                 key="trust_post"
             )
             st.caption("1 = אין אמון כלל | 5 = אמון בינוני | 10 = אמון מלא")
@@ -483,7 +483,7 @@ class PageManager:
             political_efficacy_post = st.slider(
                 "עד כמה אתה מרגיש כעת שיש לך השפעה על מה שקורה במדינה:",
                 min_value=1, max_value=10,
-                value=existing_profile.political_efficacy,
+                value=5,
                 key="efficacy_post"
             )
             st.caption("1 = אין השפעה כלל | 5 = השפעה בינונית | 10 = השפעה רבה מאוד")
