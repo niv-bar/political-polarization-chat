@@ -6,7 +6,7 @@ from datetime import datetime
 
 @dataclass
 class UserProfile:
-    """Data class for user demographic and political profile."""
+    """Data class for user demographic and political profile - raw data only."""
     # Session Info
     session_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
@@ -21,6 +21,8 @@ class UserProfile:
 
     # Political Data
     political_stance: int = 0
+    last_election_vote: str = ""  # מי הצביע בבחירות האחרונות
+    polarization_perception: str = ""  # תפיסת הקיטוב בשלוש השנים האחרונות
     protest_participation: str = ""
     influence_sources: List[str] = field(default_factory=list)
 
@@ -29,26 +31,25 @@ class UserProfile:
     political_discussions: str = ""
     social_media_activity: str = ""
 
-    # Political Attitudes
+    # Political Attitudes - PRE-CHAT
     trust_political_system: int = 0
     political_efficacy: int = 0
     political_anxiety: int = 0
-
-    # Polarization Measurements - Pre-chat
     feeling_thermometer_pre: Dict[str, int] = field(default_factory=dict)
     social_distance_pre: Dict[str, int] = field(default_factory=dict)
 
-    # Post-chat measurements (for comparison)
-    feeling_thermometer_post: Dict[str, int] = field(default_factory=dict)
-    social_distance_post: Dict[str, int] = field(default_factory=dict)
+    # Political Attitudes - POST-CHAT
     trust_political_system_post: int = 0
     political_efficacy_post: int = 0
+    feeling_thermometer_post: Dict[str, int] = field(default_factory=dict)
+    social_distance_post: Dict[str, int] = field(default_factory=dict)
 
-    # Change indicators
-    attitude_change_detected: bool = False
-    change_summary: str = ""
+    # Post-chat reflection questions (open-ended text responses)
+    conversation_impact: str = ""  # השפעת השיחה על דעותיך
+    most_interesting: str = ""  # הדבר הכי מעניין בשיחה
+    changed_mind: str = ""  # נושא שהשיחה גרמה לחשוב עליו אחרת
 
-    # Legacy field for backward compatibility
+    # Legacy properties for backward compatibility
     @property
     def feeling_thermometer(self) -> Dict[str, int]:
         return self.feeling_thermometer_pre

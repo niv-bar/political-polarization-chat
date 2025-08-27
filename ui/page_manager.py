@@ -132,7 +132,7 @@ class PageManager:
             self._handle_user_input(prompt)
 
     def render_post_chat_questionnaire(self) -> None:
-        """Render post-chat questionnaire to measure attitude changes."""
+        """Render post-chat questionnaire - raw data collection only."""
         self.ui.render_header("📊 שאלון סיכום",
                               "שלב שלישי: שאלון סיום",
                               """לאחר השיחה, נבקש לענות על כמה שאלות קצרות נוספות.""")
@@ -142,15 +142,17 @@ class PageManager:
             st.error("שגיאה: לא נמצא מידע על המשתתף")
             return
 
-        # הסרנו את הטופס (form) - עכשיו הכל בחוץ
+        # Ensure backward compatibility
+        self._ensure_profile_compatibility(existing_profile)
+
+        # Render the form and get post-chat data
         post_data = self._render_post_chat_form(existing_profile)
 
-        # עדכון הפרופיל בזמן אמת בכל שינוי
+        # Update profile with post-chat data in real-time
         self._update_profile_with_post_data(existing_profile, post_data)
-        self._calculate_attitude_changes(existing_profile)
         st.session_state.temp_user_profile = existing_profile
 
-        # הצגת הכפתורים ישירות
+        # Save buttons
         st.markdown("### 🔒 שמירת נתוני המחקר")
 
         col1, col2 = st.columns(2)
@@ -164,9 +166,12 @@ class PageManager:
                     st.success("✅ הנתונים נשמרו בהצלחה! תודה רבה על תרומתך למחקר.")
                     st.balloons()
 
-
     def _render_questionnaire_form(self, existing_profile: Optional[UserProfile]) -> Dict[str, Any]:
         """Render unbiased questionnaire form."""
+
+        # Ensure backward compatibility if profile exists
+        if existing_profile:
+            self._ensure_profile_compatibility(existing_profile)
 
         # Section 1: Basic Demographics (neutral presentation)
         st.markdown("### 👤 מידע בסיסי")
@@ -178,40 +183,38 @@ class PageManager:
             age = st.number_input("גיל:", min_value=18, max_value=120,
                                   value=existing_profile.age if existing_profile and existing_profile.age > 0 else 30)
 
-            gender = st.selectbox(
-                "מגדר:",
-                options=["בחר תשובה", "זכר", "נקבה", "אחר"],
-                index=self.ui.get_selectbox_index(["בחר תשובה", "זכר", "נקבה", "אחר"],
-                                                  existing_profile.gender if existing_profile else "בחר תשובה")
-            )
+            # Gender selection
+            current_gender = existing_profile.gender if existing_profile else "בחר תשובה"
+            gender_options = ["בחר תשובה", "זכר", "נקבה", "אחר"]
+            gender_index = gender_options.index(current_gender) if current_gender in gender_options else 0
+
+            gender = st.selectbox("מגדר:", options=gender_options, index=gender_index)
 
         with col2:
-            region = st.selectbox(
-                "אזור מגורים:",
-                options=["בחר תשובה", "צפון", "חיפה והכרמל", "השרון", "גוש דן", "ירושלים", "השפלה",
-                         "דרום", "יהודה ושומרון"],
-                index=self.ui.get_selectbox_index(["בחר תשובה", "צפון", "חיפה והקרמל", "השרון",
-                                                   "גוש דן", "ירושלים", "השפלה", "דרום", "יהודה ושומרון"],
-                                                  existing_profile.region if existing_profile else "בחר תשובה")
-            )
+            # Region selection
+            current_region = existing_profile.region if existing_profile else "בחר תשובה"
+            region_options = ["בחר תשובה", "חיפה והצפון", "אזור השרון", "אזור הדרום", "אזור ירושלים", "תל-אביב והמרכז",
+                              "יהודה ושומרון"]
+            region_index = region_options.index(current_region) if current_region in region_options else 0
 
-            marital_status = st.selectbox(
-                "מצב משפחתי:",
-                options=["בחר תשובה", "רווק", "נשוי/בזוגיות", "גרוש", "אלמן"],
-                index=self.ui.get_selectbox_index(["בחר תשובה", "רווק", "נשוי/בזוגיות", "גרוש", "אלמן"],
-                                                  existing_profile.marital_status if existing_profile else "בחר תשובה")
-            )
+            region = st.selectbox("אזור מגורים:", options=region_options, index=region_index)
 
-        education = st.selectbox(
-            "השכלה:",
-            options=["בחר תשובה", "תיכון", "הכשרה מקצועית", "תואר ראשון",
-                     "תואר שני", "תואר שלישי או מעלה"],
-            index=self.ui.get_selectbox_index(["בחר תשובה", "תיכון", "הכשרה מקצועית", "תואר ראשון",
-                     "תואר שני", "תואר שלישי או מעלה"],
-                                              existing_profile.education if existing_profile else "בחר תשובה")
-        )
+            # Marital status selection
+            current_marital = existing_profile.marital_status if existing_profile else "בחר תשובה"
+            marital_options = ["בחר תשובה", "רווק", "נשוי/בזוגיות", "גרוש", "אלמן"]
+            marital_index = marital_options.index(current_marital) if current_marital in marital_options else 0
 
-        # Section 2: Social and Cultural Background (neutral framing)
+            marital_status = st.selectbox("מצב משפחתי:", options=marital_options, index=marital_index)
+
+        # Education selection
+        current_education = existing_profile.education if existing_profile else "בחר תשובה"
+        education_options = ["בחר תשובה", "תיכון", "הכשרה מקצועית", "תואר ראשון",
+                             "תואר שני", "תואר שלישי או מעלה"]
+        education_index = education_options.index(current_education) if current_education in education_options else 0
+
+        education = st.selectbox("השכלה:", options=education_options, index=education_index)
+
+        # Section 2: Social and Cultural Background
         st.markdown("### 🏛️ רקע חברתי ותרבותי")
         st.caption("שאלות על השתייכות חברתית ותרבותית")
 
@@ -226,7 +229,7 @@ class PageManager:
         religiosity_map = {"חילוני": 1, "מסורתי": 2, "דתי": 3, "חרדי": 4}
         religiosity_numeric = religiosity_map.get(religiosity, 1)
 
-        # Section 3: Political and Social Views (presented neutrally)
+        # Section 3: Political and Social Views
         st.markdown("### 🗳️ השקפות חברתיות")
         st.caption("שאלות על השקפות וגישות חברתיות כלליות")
 
@@ -241,49 +244,86 @@ class PageManager:
         political_map = {"שמאל": 1, "מרכז-שמאל": 2, "מרכז": 3, "מרכז-ימין": 4, "ימין": 5}
         political_numeric = political_map.get(political_stance, 3)
 
-        # Section 4: Civic Engagement (neutral presentation)
+        # NEW SECTION: Voting Behavior and Political Perceptions
+        st.markdown("### 📊 התנהגות הצבעה ותפיסות פוליטיות")
+        st.caption("שאלות על התנהגות הצבעה וגישות כלפי המערכת הפוליטית")
+
+        # Last election vote
+        current_vote = getattr(existing_profile, 'last_election_vote', '') if existing_profile else "בחר תשובה"
+        current_vote = current_vote or "בחר תשובה"
+        last_election_parties = [
+            "בחר תשובה", "הליכוד", "יש עתיד", "הציונות הדתית", "המחנה הממלכתי",
+            "שס", "יהדות התורה", "ישראל ביתנו", "חדש-תעל", "רעמ", "העבודה",
+            "מרץ", "בלד", "עוצמה יהודית", "לא הצבעתי"
+        ]
+        vote_index = last_election_parties.index(current_vote) if current_vote in last_election_parties else 0
+
+        last_election_vote = st.selectbox(
+            "למי הצבעת בבחירות הכנסת האחרונות?",
+            options=last_election_parties, index=vote_index
+        )
+
+        # Polarization perception
+        current_polar = getattr(existing_profile, 'polarization_perception', '') if existing_profile else "בחר תשובה"
+        current_polar = current_polar or "בחר תשובה"
+        polar_options = ["בחר תשובה", "הקיטוב גבר", "הקיטוב לא השתנה", "הקיטוב פחת"]
+        polar_index = polar_options.index(current_polar) if current_polar in polar_options else 0
+
+        polarization_perception = st.selectbox(
+            "האם לדעתך הקיטוב הפוליטי גבר בישראל בשלוש השנים האחרונות?",
+            options=polar_options, index=polar_index
+        )
+
+        # Section 4: Civic Engagement
         st.markdown("### 🏛️ מעורבות אזרחית")
         st.caption("שאלות על מעורבות בחיים הציבוריים")
 
         col1, col2 = st.columns(2)
 
         with col1:
-            voting_frequency = st.selectbox(
-                "האם אתה נוהג להצביע בבחירות?",
-                options=["בחר תשובה", "כן, תמיד", "ברוב המקרים", "לעיתים", "כמעט אף פעם", "אף פעם"],
-                index=self.ui.get_selectbox_index(
-                    ["בחר תשובה", "כן, תמיד", "ברוב המקרים", "לעיתים", "כמעט אף פעם", "אף פעם"],
-                    existing_profile.voting_frequency if existing_profile else "בחר תשובה")
-            )
+            # Voting frequency
+            current_voting = existing_profile.voting_frequency if existing_profile else "בחר תשובה"
+            voting_options = ["בחר תשובה", "כן, תמיד", "ברוב המקרים", "לעיתים", "כמעט אף פעם", "אף פעם"]
+            voting_index = voting_options.index(current_voting) if current_voting in voting_options else 0
+
+            voting_frequency = st.selectbox("האם אתה נוהג להצביע בבחירות?",
+                                            options=voting_options, index=voting_index)
+
+            # Protest participation
+            current_protest = existing_profile.protest_participation if existing_profile else "בחר תשובה"
+            protest_options = ["בחר תשובה", "לא השתתפתי", "השתתפתי באירוע אחד",
+                               "השתתפתי במספר אירועים", "השתתפתי באירועים רבים"]
+            protest_index = protest_options.index(current_protest) if current_protest in protest_options else 0
 
             protest_participation = st.selectbox(
                 "השתתפות בהפגנות או עצרות (בשנתיים האחרונות):",
-                options=["בחר תשובה", "לא השתתפתי", "השתתפתי באירוע אחד",
-                         "השתתפתי במספר אירועים", "השתתפתי באירועים רבים"],
-                index=self.ui.get_selectbox_index(["בחר תשובה", "לא השתתפתי", "השתתפתי באירוע אחד",
-                                                   "השתתפתי במספר אירועים", "השתתפתי באירועים רבים"],
-                                                  existing_profile.protest_participation if existing_profile else "בחר תשובה")
+                options=protest_options, index=protest_index
             )
 
         with col2:
+            # Political discussions
+            current_discussions = existing_profile.political_discussions if existing_profile else "בחר תשובה"
+            discussions_options = ["בחר תשובה", "כמעט אף פעם", "לעיתים רחוקות", "לעיתים", "לעיתים קרובות", "בקביעות"]
+            discussions_index = discussions_options.index(
+                current_discussions) if current_discussions in discussions_options else 0
+
             political_discussions = st.selectbox(
                 "עד כמה אתה נוהג לדון בנושאים חברתיים עם אחרים?",
-                options=["בחר תשובה", "כמעט אף פעם", "לעיתים רחוקות", "לעיתים", "לעיתים קרובות", "בקביעות"],
-                index=self.ui.get_selectbox_index(
-                    ["בחר תשובה", "כמעט אף פעם", "לעיתים רחוקות", "לעיתים", "לעיתים קרובות", "בקביעות"],
-                    existing_profile.political_discussions if existing_profile else "בחר תשובה")
+                options=discussions_options, index=discussions_index
             )
+
+            # Social media activity
+            current_social = existing_profile.social_media_activity if existing_profile else "בחר תשובה"
+            social_options = ["בחר תשובה", "כלל לא פעיל", "קורא אבל לא מגיב",
+                              "מגיב לעיתים", "משתף ומגיב", "פעיל מאוד"]
+            social_index = social_options.index(current_social) if current_social in social_options else 0
 
             social_media_activity = st.selectbox(
                 "עד כמה אתה פעיל ברשתות חברתיות בנושאים חברתיים?",
-                options=["בחר תשובה", "כלל לא פעיל", "קורא אבל לא מגיב",
-                         "מגיב לעיתים", "משתף ומגיב", "פעיל מאוד"],
-                index=self.ui.get_selectbox_index(["בחר תשובה", "כלל לא פעיל", "קורא אבל לא מגיב",
-                                                   "מגיב לעיתים", "משתף ומגיב", "פעיל מאוד"],
-                                                  existing_profile.social_media_activity if existing_profile else "בחר תשובה")
+                options=social_options, index=social_index
             )
 
-        # Section 5: Information Sources (neutral)
+        # Section 5: Information Sources
         influence_sources = st.multiselect(
             "מאיזה מקורות אתה בדרך כלל מקבל מידע על נושאים חברתיים? (ניתן לבחור מספר אפשרויות)",
             options=["חברים ומשפחה", "עיתונות מקצועית", "רשתות חברתיות",
@@ -293,7 +333,7 @@ class PageManager:
             placeholder="בחר מקורות מידע"
         )
 
-        # Section 6: Attitude Scales (neutral presentation)
+        # Section 6: Attitude Scales
         st.markdown("### 📊 עמדות כלליות")
         st.caption("דרג את עמדתך בנושאים הבאים (אין תשובות נכונות או שגויות)")
 
@@ -322,10 +362,10 @@ class PageManager:
             )
             st.caption("1 = לא מודאג כלל | 5 = דאגה בינונית | 10 = מודאג מאוד")
 
-        # Section 7: Party Feeling Thermometer (randomized order, neutral presentation)
+        # Section 7: Party Feeling Thermometer
         feeling_thermometer = self._render_feeling_thermometer(existing_profile, is_pre=True)
 
-        # Section 8: Social Distance (neutral framing)
+        # Section 8: Social Distance
         social_distance = self._render_social_distance(existing_profile, is_pre=True)
 
         return {
@@ -336,6 +376,8 @@ class PageManager:
             "religiosity": religiosity_numeric,
             "education": education if education != "בחר תשובה" else "",
             "political_stance": political_numeric,
+            "last_election_vote": last_election_vote if last_election_vote != "בחר תשובה" else "",
+            "polarization_perception": polarization_perception if polarization_perception != "בחר תשובה" else "",
             "protest_participation": protest_participation if protest_participation != "בחר תשובה" else "",
             "influence_sources": influence_sources,
             "voting_frequency": voting_frequency if voting_frequency != "בחר תשובה" else "",
@@ -421,7 +463,7 @@ class PageManager:
         return social_distance
 
     def _render_post_chat_form(self, existing_profile: UserProfile) -> Dict[str, Any]:
-        """Render post-chat questionnaire to measure changes."""
+        """Render post-chat questionnaire - same questions as pre-chat."""
         st.markdown("### 🔄 לאחר השיחה")
         st.caption("כעת נבקש לענות שוב על כמה שאלות דומות, כדי לבחון האם השיחה השפיעה על דעותיך")
 
@@ -450,24 +492,32 @@ class PageManager:
         feeling_thermometer_post = self._render_feeling_thermometer(existing_profile, is_pre=False)
         social_distance_post = self._render_social_distance(existing_profile, is_pre=False)
 
-        # Additional reflection questions
+        # Reflection questions (open-ended text responses)
         st.markdown("### 💭 רפלקציה על השיחה")
+
+        # Get current value or default (check if attribute exists)
+        current_impact = getattr(existing_profile, 'conversation_impact', '') or "בחר תשובה"
+        impact_options = ["בחר תשובה", "לא השפיעה כלל", "השפיעה מעט", "השפיעה במידה בינונית",
+                          "השפיעה הרבה", "השפיעה מאוד"]
+        impact_index = impact_options.index(current_impact) if current_impact in impact_options else 0
 
         conversation_impact = st.selectbox(
             "האם השיחה השפיעה על דעותיך או נקודות המבט שלך?",
-            options=["לא השפיעה כלל", "השפיעה מעט", "השפיעה במידה בינונית",
-                     "השפיעה הרבה", "השפיעה מאוד"],
+            options=impact_options,
+            index=impact_index,
             key="conversation_impact"
         )
 
         most_interesting = st.text_area(
             "מה היה הדבר הכי מעניין או מפתיע בשיחה? (אופציונלי)",
+            value=getattr(existing_profile, 'most_interesting', '') or "",
             placeholder="תוכל לכתוב כאן מה עלה בשיחה שהיה מעניין או חדש בעיניך...",
             key="most_interesting"
         )
 
         changed_mind = st.text_area(
             "האם יש נושא שהשיחה גרמה לך לחשוב עליו אחרת? (אופציונלי)",
+            value=getattr(existing_profile, 'changed_mind', '') or "",
             placeholder="אם כן, תוכל לתאר בקצרה באיזה נושא ואיך השתנתה דעתך...",
             key="changed_mind"
         )
@@ -477,17 +527,22 @@ class PageManager:
             "political_efficacy_post": political_efficacy_post,
             "feeling_thermometer_post": feeling_thermometer_post,
             "social_distance_post": social_distance_post,
-            "conversation_impact": conversation_impact,
+            "conversation_impact": conversation_impact if conversation_impact != "בחר תשובה" else "",
             "most_interesting": most_interesting,
             "changed_mind": changed_mind
         }
 
     def _update_profile_with_post_data(self, profile: UserProfile, post_data: Dict[str, Any]) -> None:
-        """Update profile with post-chat data."""
+        """Update profile with post-chat data - raw data only."""
         profile.trust_political_system_post = post_data["trust_political_system_post"]
         profile.political_efficacy_post = post_data["political_efficacy_post"]
         profile.feeling_thermometer_post = post_data["feeling_thermometer_post"]
         profile.social_distance_post = post_data["social_distance_post"]
+
+        # Set new attributes safely
+        setattr(profile, 'conversation_impact', post_data["conversation_impact"])
+        setattr(profile, 'most_interesting', post_data["most_interesting"])
+        setattr(profile, 'changed_mind', post_data["changed_mind"])
 
     def _calculate_attitude_changes(self, profile: UserProfile) -> None:
         """Calculate and summarize attitude changes."""
@@ -562,6 +617,8 @@ class PageManager:
             "marital_status": "מצב משפחתי",
             "region": "אזור מגורים",
             "education": "השכלה",
+            "last_election_vote": "הצבעה בבחירות האחרונות",  # NEW
+            "polarization_perception": "תפיסת הקיטוב הפוליטי",  # NEW
             "voting_frequency": "תדירות הצבעה",
             "protest_participation": "השתתפות בהפגנות",
             "political_discussions": "דיונים פוליטיים",
@@ -595,13 +652,19 @@ class PageManager:
                              existing_profile: Optional[UserProfile]) -> UserProfile:
         """Create or update user profile."""
         if existing_profile:
+            # Ensure backward compatibility first
+            self._ensure_profile_compatibility(existing_profile)
+
             # Update existing profile
             for key, value in profile_data.items():
                 setattr(existing_profile, key, value)
             return existing_profile
         else:
-            # Create new profile
-            return UserProfile(**profile_data)
+            # Create new profile with all current fields
+            profile = UserProfile(**profile_data)
+            # Ensure all fields are present (in case UserProfile dataclass is missing some)
+            self._ensure_profile_compatibility(profile)
+            return profile
 
     def _save_temp_user_profile(self, profile: UserProfile) -> None:
         """Save user profile to temporary session state."""
@@ -691,6 +754,20 @@ class PageManager:
 
     # ... (include all other existing methods like _verify_admin_password, render_admin_dashboard, etc.)
 
+    def _ensure_profile_compatibility(self, profile: UserProfile) -> None:
+        """Ensure profile has all new fields for backward compatibility."""
+        new_fields = {
+            'last_election_vote': '',
+            'polarization_perception': '',
+            'conversation_impact': '',
+            'most_interesting': '',
+            'changed_mind': ''
+        }
+
+        for field, default_value in new_fields.items():
+            if not hasattr(profile, field):
+                setattr(profile, field, default_value)
+
     def _verify_admin_password(self, password: str) -> bool:
         """Verify admin password."""
         try:
@@ -742,7 +819,7 @@ class PageManager:
             st.markdown("📧 שאלות: research@university.ac.il")
 
     def _save_conversation_data(self) -> bool:
-        """Save conversation data."""
+        """Save conversation data - raw data only, no calculations."""
         try:
             profile = st.session_state.get("temp_user_profile")
             messages = st.session_state.get("messages", [])
@@ -751,17 +828,23 @@ class PageManager:
                 st.error("שגיאה: לא נמצא פרופיל משתמש או שיחה ריקה")
                 return False
 
+            # Simple session data with raw information only
             session_data = {
                 "session_id": profile.session_id,
                 "created_at": profile.created_at,
                 "finished_at": datetime.now().isoformat(),
+
+                # Raw user profile data (all survey responses)
                 "user_profile": asdict(profile),
+
+                # Raw conversation data (all messages as-is)
                 "conversation": messages,
-                "conversation_stats": {
+
+                # Basic session info (no calculations, just facts)
+                "session_info": {
                     "total_messages": len(messages),
-                    "user_messages": len([m for m in messages if m["role"] == "user"]),
-                    "bot_messages": len([m for m in messages if m["role"] == "assistant"]),
-                    "duration_minutes": self._calculate_duration(messages)
+                    "start_time": messages[0]["timestamp"] if messages else None,
+                    "end_time": messages[-1]["timestamp"] if messages else None
                 }
             }
 
@@ -772,7 +855,7 @@ class PageManager:
             return False
 
     def _calculate_duration(self, messages: List[Dict]) -> float:
-        """Calculate conversation duration in minutes."""
+        """Calculate conversation duration in minutes - for basic session info only."""
         if not messages or len(messages) < 2:
             return 0.0
         try:
