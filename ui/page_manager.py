@@ -254,7 +254,7 @@ class PageManager:
         last_election_parties = [
             "בחר תשובה", "הליכוד", "יש עתיד", "הציונות הדתית", "המחנה הממלכתי",
             "שס", "יהדות התורה", "ישראל ביתנו", "חדש-תעל", "רעמ", "העבודה",
-            "מרץ", "בלד", "עוצמה יהודית", "לא הצבעתי"
+            "מרץ", "בלד", "עוצמה יהודית", "אחר", "לא הצבעתי"
         ]
         vote_index = last_election_parties.index(current_vote) if current_vote in last_election_parties else 0
 
