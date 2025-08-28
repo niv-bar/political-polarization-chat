@@ -534,7 +534,7 @@ class PageManager:
 
     def _render_feeling_thermometer_isolated(self, existing_profile: Optional[UserProfile], is_pre: bool = True) -> \
     Dict[str, int]:
-        """Render feeling thermometer with completely isolated keys."""
+        """Render feeling thermometer with completely isolated keys and independent values."""
         st.markdown("### 🌡️ דירוג רגשי למפלגות")
         st.caption("""
         דרג את הרגש שלך כלפי המפלגות הבאות, כאשר:
@@ -550,22 +550,19 @@ class PageManager:
         # Use consistent order for post-chat (don't randomize again)
         feeling_thermometer = {}
 
-        # Use existing data for comparison
-        existing_data = {}
-        if existing_profile:
-            if is_pre:
-                existing_data = getattr(existing_profile, 'feeling_thermometer_pre', {})
-            else:
-                existing_data = getattr(existing_profile, 'feeling_thermometer_post', {})
+        # Generate unique session identifier for this render
+        import time
+        session_id = getattr(existing_profile, 'session_id', str(int(time.time())))
 
         col1, col2 = st.columns(2)
         for i, party in enumerate(parties):
             with col1 if i % 2 == 0 else col2:
-                unique_key = f"isolated_feeling_{party}_{'pre' if is_pre else 'post'}_{id(existing_profile) if existing_profile else 'new'}"
+                unique_key = f"postchat_feeling_{party.replace(' ', '_').replace('״', '').replace('־', '_')}_{'pre' if is_pre else 'post'}_{session_id}_{i}"
+                # Always use default value of 50 for post-chat - completely independent
                 feeling_thermometer[party] = st.slider(
                     f"{party}:",
                     min_value=0, max_value=100,
-                    value=existing_data.get(party, 50),
+                    value=50,  # Always start at neutral 50, independent of pre-chat
                     key=unique_key
                 )
 
@@ -573,7 +570,7 @@ class PageManager:
 
     def _render_social_distance_isolated(self, existing_profile: Optional[UserProfile], is_pre: bool = True) -> Dict[
         str, int]:
-        """Render social distance questions with completely isolated keys."""
+        """Render social distance questions with completely isolated keys and independent values."""
         st.markdown("### 🤝 מרחק חברתי")
         st.caption("""
         עד כמה היית מרגיש בנוח במצבים הבאים עם אנשים שיש להם השקפות חברתיות-פוליטיות שונות מאוד משלך?
@@ -591,20 +588,18 @@ class PageManager:
 
         social_distance = {}
 
-        # Use existing data for comparison
-        existing_data = {}
-        if existing_profile:
-            if is_pre:
-                existing_data = getattr(existing_profile, 'social_distance_pre', {})
-            else:
-                existing_data = getattr(existing_profile, 'social_distance_post', {})
+        # Generate unique session identifier for this render
+        import time
+        session_id = getattr(existing_profile, 'session_id', str(int(time.time())))
 
-        for situation in social_situations:
-            unique_key = f"isolated_social_{situation}_{'pre' if is_pre else 'post'}_{id(existing_profile) if existing_profile else 'new'}"
+        for i, situation in enumerate(social_situations):
+            clean_situation = situation.replace('/', '_').replace(' ', '_').replace('-', '_')
+            unique_key = f"postchat_social_{clean_situation}_{'pre' if is_pre else 'post'}_{session_id}_{i}"
+            # Always use default value of 3 for post-chat - completely independent
             social_distance[situation] = st.slider(
                 f"{situation}:",
                 min_value=1, max_value=6,
-                value=existing_data.get(situation, 3),
+                value=3,  # Always start at neutral 3, independent of pre-chat
                 key=unique_key
             )
 
