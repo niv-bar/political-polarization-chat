@@ -467,7 +467,7 @@ class PageManager:
         st.markdown("### 🔄 לאחר השיחה")
         st.caption("כעת נבקש לענות שוב על כמה שאלות דומות, כדי לבחון האם השיחה השפיעה על דעותיך")
 
-        # Key attitude measures (same as pre-chat)
+        # Key attitude measures (same as pre-chat) - with unique keys
         col1, col2 = st.columns(2)
 
         with col1:
@@ -475,7 +475,7 @@ class PageManager:
                 "רמת האמון במוסדות הציבוריים כעת:",
                 min_value=1, max_value=10,
                 value=5,
-                key="trust_post"
+                key="post_chat_trust_political_system"
             )
             st.caption("1 = אין אמון כלל | 5 = אמון בינוני | 10 = אמון מלא")
 
@@ -484,13 +484,13 @@ class PageManager:
                 "עד כמה אתה מרגיש כעת שיש לך השפעה על מה שקורה במדינה:",
                 min_value=1, max_value=10,
                 value=5,
-                key="efficacy_post"
+                key="post_chat_political_efficacy"
             )
             st.caption("1 = אין השפעה כלל | 5 = השפעה בינונית | 10 = השפעה רבה מאוד")
 
-        # Post-chat feeling thermometer and social distance
-        feeling_thermometer_post = self._render_feeling_thermometer(existing_profile, is_pre=False)
-        social_distance_post = self._render_social_distance(existing_profile, is_pre=False)
+        # Post-chat feeling thermometer and social distance with isolated rendering
+        feeling_thermometer_post = self._render_feeling_thermometer_isolated(existing_profile, is_pre=False)
+        social_distance_post = self._render_social_distance_isolated(existing_profile, is_pre=False)
 
         # Reflection questions (open-ended text responses)
         st.markdown("### 💭 רפלקציה על השיחה")
@@ -505,21 +505,21 @@ class PageManager:
             "האם השיחה השפיעה על דעותיך או נקודות המבט שלך?",
             options=impact_options,
             index=impact_index,
-            key="conversation_impact"
+            key="post_chat_conversation_impact"
         )
 
         most_interesting = st.text_area(
             "מה היה הדבר הכי מעניין או מפתיע בשיחה? (אופציונלי)",
             value=getattr(existing_profile, 'most_interesting', '') or "",
             placeholder="תוכל לכתוב כאן מה עלה בשיחה שהיה מעניין או חדש בעיניך...",
-            key="most_interesting"
+            key="post_chat_most_interesting"
         )
 
         changed_mind = st.text_area(
             "האם יש נושא שהשיחה גרמה לך לחשוב עליו אחרת? (אופציונלי)",
             value=getattr(existing_profile, 'changed_mind', '') or "",
             placeholder="אם כן, תוכל לתאר בקצרה באיזה נושא ואיך השתנתה דעתך...",
-            key="changed_mind"
+            key="post_chat_changed_mind"
         )
 
         return {
@@ -531,6 +531,84 @@ class PageManager:
             "most_interesting": most_interesting,
             "changed_mind": changed_mind
         }
+
+    def _render_feeling_thermometer_isolated(self, existing_profile: Optional[UserProfile], is_pre: bool = True) -> \
+    Dict[str, int]:
+        """Render feeling thermometer with completely isolated keys."""
+        st.markdown("### 🌡️ דירוג רגשי למפלגות")
+        st.caption("""
+        דרג את הרגש שלך כלפי המפלגות הבאות, כאשר:
+        * 0 = רגש שלילי מאוד
+        * 50 = ניטרלי/אין דעה מיוחדת  
+        * 100 = רגש חיובי מאוד
+        """)
+
+        parties = ["הליכוד", "יש עתיד", "הציונות הדתית", "המחנה הממלכתי",
+                   "ש״ס", "יהדות התורה", "ישראל ביתנו",
+                   "חד״ש - תע״ל", "רע״מ", "העבודה", "עוצמה יהודית", "נעם"]
+
+        # Use consistent order for post-chat (don't randomize again)
+        feeling_thermometer = {}
+
+        # Use existing data for comparison
+        existing_data = {}
+        if existing_profile:
+            if is_pre:
+                existing_data = getattr(existing_profile, 'feeling_thermometer_pre', {})
+            else:
+                existing_data = getattr(existing_profile, 'feeling_thermometer_post', {})
+
+        col1, col2 = st.columns(2)
+        for i, party in enumerate(parties):
+            with col1 if i % 2 == 0 else col2:
+                unique_key = f"isolated_feeling_{party}_{'pre' if is_pre else 'post'}_{id(existing_profile) if existing_profile else 'new'}"
+                feeling_thermometer[party] = st.slider(
+                    f"{party}:",
+                    min_value=0, max_value=100,
+                    value=existing_data.get(party, 50),
+                    key=unique_key
+                )
+
+        return feeling_thermometer
+
+    def _render_social_distance_isolated(self, existing_profile: Optional[UserProfile], is_pre: bool = True) -> Dict[
+        str, int]:
+        """Render social distance questions with completely isolated keys."""
+        st.markdown("### 🤝 מרחק חברתי")
+        st.caption("""
+        עד כמה היית מרגיש בנוח במצבים הבאים עם אנשים שיש להם השקפות חברתיות-פוליטיות שונות מאוד משלך?
+
+        * 1 = מאוד לא בנוח
+        * 6 = מאוד בנוח
+        """)
+
+        social_situations = [
+            "לגור באותה השכונה",
+            "לעבוד במקום עבודה משותף",
+            "לפתח חברות אישית",
+            "שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה"
+        ]
+
+        social_distance = {}
+
+        # Use existing data for comparison
+        existing_data = {}
+        if existing_profile:
+            if is_pre:
+                existing_data = getattr(existing_profile, 'social_distance_pre', {})
+            else:
+                existing_data = getattr(existing_profile, 'social_distance_post', {})
+
+        for situation in social_situations:
+            unique_key = f"isolated_social_{situation}_{'pre' if is_pre else 'post'}_{id(existing_profile) if existing_profile else 'new'}"
+            social_distance[situation] = st.slider(
+                f"{situation}:",
+                min_value=1, max_value=6,
+                value=existing_data.get(situation, 3),
+                key=unique_key
+            )
+
+        return social_distance
 
     def _update_profile_with_post_data(self, profile: UserProfile, post_data: Dict[str, Any]) -> None:
         """Update profile with post-chat data - raw data only."""
