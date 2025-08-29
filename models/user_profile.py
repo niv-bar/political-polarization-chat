@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 
 
+# models/user_profile.py
 @dataclass
 class UserProfile:
     """Data class for user demographic and political profile - raw data only."""
@@ -21,8 +22,8 @@ class UserProfile:
 
     # Political Data
     political_stance: int = 0
-    last_election_vote: str = ""  # מי הצביע בבחירות האחרונות
-    polarization_perception: str = ""  # תפיסת הקיטוב בשלוש השנים האחרונות
+    last_election_vote: str = ""
+    polarization_perception: str = ""
     protest_participation: str = ""
     influence_sources: List[str] = field(default_factory=list)
 
@@ -35,19 +36,21 @@ class UserProfile:
     trust_political_system: int = 0
     political_efficacy: int = 0
     political_anxiety: int = 0
+    gaza_position_pre: str = ""  # NEW: Position on ending Gaza war before chat
     feeling_thermometer_pre: Dict[str, int] = field(default_factory=dict)
     social_distance_pre: Dict[str, int] = field(default_factory=dict)
 
     # Political Attitudes - POST-CHAT
     trust_political_system_post: int = 0
     political_efficacy_post: int = 0
+    gaza_position_post: str = ""  # NEW: Position on ending Gaza war after chat
     feeling_thermometer_post: Dict[str, int] = field(default_factory=dict)
     social_distance_post: Dict[str, int] = field(default_factory=dict)
 
-    # Post-chat reflection questions (open-ended text responses)
-    conversation_impact: str = ""  # השפעת השיחה על דעותיך
-    most_interesting: str = ""  # הדבר הכי מעניין בשיחה
-    changed_mind: str = ""  # נושא שהשיחה גרמה לחשוב עליו אחרת
+    # Post-chat reflection questions
+    conversation_impact: str = ""
+    most_interesting: str = ""
+    changed_mind: str = ""
 
     # Legacy properties for backward compatibility
     @property
