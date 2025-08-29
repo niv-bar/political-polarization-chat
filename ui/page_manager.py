@@ -265,13 +265,15 @@ class PageManager:
         st.markdown("### 🏛️ מעורבות אזרחית")
         st.caption("שאלות על מעורבות בחיים הציבוריים")
 
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)  # Changed to 3 columns
         with col1:
             voting_frequency = self._render_select(
                 "האם אתה נוהג להצביע בבחירות?",
                 ["בחר תשובה", "כן, תמיד", "ברוב המקרים", "לעיתים", "כמעט אף פעם", "אף פעם"],
                 existing_profile.voting_frequency if existing_profile else None
             )
+
+        with col2:
             protest_participation = self._render_select(
                 "השתתפות בהפגנות או עצרות (בשנתיים האחרונות):",
                 ["בחר תשובה", "לא השתתפתי", "השתתפתי באירוע אחד",
@@ -279,12 +281,23 @@ class PageManager:
                 existing_profile.protest_participation if existing_profile else None
             )
 
-        with col2:
+        with col3:
+            military_service_recent = self._render_select(
+                "האם שירתת במילואים בשנתיים האחרונות?",
+                ["בחר תשובה", "כן, שירות מלא", "כן, שירות חלקי", "לא", "לא רלוונטי"],
+                getattr(existing_profile, 'military_service_recent', '') if existing_profile else None
+            )
+
+        # Then continue with political_discussions and social_media_activity in a new row
+        col1, col2 = st.columns(2)
+        with col1:
             political_discussions = self._render_select(
                 "עד כמה אתה נוהג לדון בנושאים חברתיים עם אחרים?",
                 ["בחר תשובה", "כמעט אף פעם", "לעיתים רחוקות", "לעיתים", "לעיתים קרובות", "בקביעות"],
                 existing_profile.political_discussions if existing_profile else None
             )
+
+        with col2:
             social_media_activity = self._render_select(
                 "עד כמה אתה פעיל ברשתות חברתיות בנושאים חברתיים?",
                 ["בחר תשובה", "כלל לא פעיל", "קורא אבל לא מגיב",
@@ -358,6 +371,7 @@ class PageManager:
             "last_election_vote": last_election_vote if last_election_vote != "בחר תשובה" else "",
             "polarization_perception": polarization_perception if polarization_perception != "בחר תשובה" else "",
             "protest_participation": protest_participation if protest_participation != "בחר תשובה" else "",
+            "military_service_recent": military_service_recent if military_service_recent != "בחר תשובה" else "",
             "influence_sources": influence_sources,
             "voting_frequency": voting_frequency if voting_frequency != "בחר תשובה" else "",
             "political_discussions": political_discussions if political_discussions != "בחר תשובה" else "",
@@ -454,9 +468,19 @@ class PageManager:
         * 100 = רגש חיובי מאוד
         """)
 
-        parties = ["הליכוד", "יש עתיד", "הציונות הדתית", "המחנה הממלכתי",
-                   "ש״ס", "יהדות התורה", "ישראל ביתנו", "חד״ש - תע״ל",
-                   "רע״מ", "העבודה", "עוצמה יהודית", "נעם"]
+        # Updated parties list
+        parties = [
+            "הליכוד",
+            "יש עתיד",
+            "הציונות הדתית",
+            "המחנה הממלכתי",
+            "ישראל ביתנו",
+            "העבודה",
+            "מרץ",
+            "עוצמה יהודית",
+            "המפלגות החרדיות",  # (replaces ש״ס and יהדות התורה)
+            "המפלגות הערביות"  # (replaces חד״ש - תע״ל and רע״מ)
+        ]
 
         # Randomize for pre-chat, keep order for post-chat
         if is_pre and not is_post_chat:
@@ -548,6 +572,7 @@ class PageManager:
         defaults = {
             'last_election_vote': '',
             'polarization_perception': '',
+            'military_service_recent': '',  # NEW
             'gaza_position_pre': 'יש להמשיך עד להשגת חלק מהיעדים',
             'gaza_position_post': '',
             'conversation_impact': '',

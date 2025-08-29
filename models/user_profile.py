@@ -25,6 +25,7 @@ class UserProfile:
     last_election_vote: str = ""
     polarization_perception: str = ""
     protest_participation: str = ""
+    military_service_recent: str = ""
     influence_sources: List[str] = field(default_factory=list)
 
     # Political Participation
