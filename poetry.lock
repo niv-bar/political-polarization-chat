@@ -1130,8 +1130,8 @@ files = [
 google-api-core = {version = ">=1.34.1,<2.0.dev0 || >=2.11.dev0,<3.0.0dev", extras = ["grpc"]}
 google-auth = ">=2.14.1,<2.24.0 || >2.24.0,<2.25.0 || >2.25.0,<3.0.0dev"
 proto-plus = [
-    {version = ">=1.22.3,<2.0.0dev"},
     {version = ">=1.25.0,<2.0.0dev", markers = "python_version >= \"3.13\""},
+    {version = ">=1.22.3,<2.0.0dev"},
 ]
 protobuf = ">=3.20.2,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<6.0.0dev"
 
@@ -1151,16 +1151,16 @@ files = [
 google-auth = ">=2.14.1,<3.0.0"
 googleapis-common-protos = ">=1.56.2,<2.0.0"
 grpcio = [
-    {version = ">=1.33.2,<2.0.0", optional = true, markers = "extra == \"grpc\""},
     {version = ">=1.49.1,<2.0.0", optional = true, markers = "python_version >= \"3.11\" and extra == \"grpc\""},
+    {version = ">=1.33.2,<2.0.0", optional = true, markers = "extra == \"grpc\""},
 ]
 grpcio-status = [
-    {version = ">=1.33.2,<2.0.0", optional = true, markers = "extra == \"grpc\""},
     {version = ">=1.49.1,<2.0.0", optional = true, markers = "python_version >= \"3.11\" and extra == \"grpc\""},
+    {version = ">=1.33.2,<2.0.0", optional = true, markers = "extra == \"grpc\""},
 ]
 proto-plus = [
-    {version = ">=1.22.3,<2.0.0"},
     {version = ">=1.25.0,<2.0.0", markers = "python_version >= \"3.13\""},
+    {version = ">=1.22.3,<2.0.0"},
 ]
 protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0"
 requests = ">=2.18.0,<3.0.0"
@@ -1270,9 +1270,9 @@ google-api-core = {version = ">=1.34.0,<2.0.dev0 || >=2.11.dev0,<3.0.0", extras 
 google-auth = ">=2.14.1,<2.24.0 || >2.24.0,<2.25.0 || >2.25.0,<3.0.0"
 google-cloud-core = ">=1.4.1,<3.0.0"
 proto-plus = [
-    {version = ">=1.22.0,<2.0.0"},
-    {version = ">=1.22.2,<2.0.0", markers = "python_version >= \"3.11\""},
     {version = ">=1.25.0,<2.0.0", markers = "python_version >= \"3.13\""},
+    {version = ">=1.22.2,<2.0.0", markers = "python_version >= \"3.11\" and python_version < \"3.13\""},
+    {version = ">=1.22.0,<2.0.0", markers = "python_version < \"3.11\""},
 ]
 protobuf = ">=3.20.2,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0dev"
 
@@ -2981,9 +2981,9 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.22.4", markers = "python_version < \"3.11\""},
-    {version = ">=1.23.2", markers = "python_version == \"3.11\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+    {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.22.4", markers = "python_version < \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -3689,18 +3689,6 @@ files = [
 six = ">=1.5"
 
 [[package]]
-name = "python-decouple"
-version = "3.8"
-description = "Strict separation of settings from code."
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "python-decouple-3.8.tar.gz", hash = "sha256:ba6e2657d4f376ecc46f77a3a615e058d93ba5e465c01bbe57289bfb7cce680f"},
-    {file = "python_decouple-3.8-py3-none-any.whl", hash = "sha256:d0d45340815b25f4de59c974b855bb38d03151d81b037d9e3f463b0c9f8cbd66"},
-]
-
-[[package]]
 name = "python-dotenv"
 version = "1.1.1"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -4369,23 +4357,6 @@ snowflake = ["snowflake-connector-python (>=3.3.0) ; python_version < \"3.12\"",
 sql = ["SQLAlchemy (>=2.0.0)"]
 
 [[package]]
-name = "streamlit-aggrid"
-version = "1.1.8.post1"
-description = "Streamlit component implementation of ag-grid"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "streamlit_aggrid-1.1.8.post1-py3-none-any.whl", hash = "sha256:53d1c49e0e69637e8f15f9931fa4cd222a7502d0529b1e5c18b49e09bb6d24ad"},
-    {file = "streamlit_aggrid-1.1.8.post1.tar.gz", hash = "sha256:384e8f11a5ac378bdd2769c1f542b37c04674989019d36b40e1f5a726e10055e"},
-]
-
-[package.dependencies]
-pandas = ">=1.4.0"
-python-decouple = "*"
-streamlit = ">=1.2"
-
-[[package]]
 name = "tenacity"
 version = "9.1.2"
 description = "Retry code until it succeeds"
@@ -4844,4 +4815,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "8a7be66d046d8e4590b75e69d0f7d35e6e56169751b273a9a64daceefd8186d6"
+content-hash = "0ebb50bd104c906b77e9c14abf0829de3beef3728b02ae29b34f296427fa0d14"
