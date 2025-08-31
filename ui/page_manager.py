@@ -42,7 +42,7 @@ class PageManager:
 
             # User path
             st.markdown("#### 👥 משתתף במחקר")
-            if st.button("🚀 התחל השתתפות במחקר", use_container_width=True, type="primary"):
+            if st.button("🚀 התחל/י השתתפות במחקר", use_container_width=True, type="primary"):
                 st.session_state.app_mode = "user"
                 st.rerun()
 
