@@ -37,14 +37,16 @@ class UserProfile:
     trust_political_system: int = 0
     political_efficacy: int = 0
     political_anxiety: int = 0
-    gaza_position_pre: str = ""  # NEW: Position on ending Gaza war before chat
+    war_priority_pre: str = ""  # NEW: Which war goal is more important (before chat)
+    israel_action_pre: str = ""  # NEW: What Israel should do now (before chat)
     feeling_thermometer_pre: Dict[str, int] = field(default_factory=dict)
     social_distance_pre: Dict[str, int] = field(default_factory=dict)
 
     # Political Attitudes - POST-CHAT
     trust_political_system_post: int = 0
     political_efficacy_post: int = 0
-    gaza_position_post: str = ""  # NEW: Position on ending Gaza war after chat
+    war_priority_post: str = ""  # NEW: Which war goal is more important (after chat)
+    israel_action_post: str = ""  # NEW: What Israel should do now (after chat)
     feeling_thermometer_post: Dict[str, int] = field(default_factory=dict)
     social_distance_post: Dict[str, int] = field(default_factory=dict)
 
@@ -61,3 +63,12 @@ class UserProfile:
     @property
     def social_distance(self) -> Dict[str, int]:
         return self.social_distance_pre
+
+    # Backward compatibility for old gaza_position fields
+    @property
+    def gaza_position_pre(self) -> str:
+        return ""
+
+    @property
+    def gaza_position_post(self) -> str:
+        return ""

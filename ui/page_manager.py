@@ -265,7 +265,7 @@ class PageManager:
         st.markdown("### 🏛️ מעורבות אזרחית")
         st.caption("שאלות על מעורבות בחיים הציבוריים")
 
-        col1, col2, col3 = st.columns(3)  # Changed to 3 columns
+        col1, col2, col3 = st.columns(3)
         with col1:
             voting_frequency = self._render_select(
                 "האם אתה נוהג להצביע בבחירות?",
@@ -288,7 +288,6 @@ class PageManager:
                 getattr(existing_profile, 'military_service_recent', '') if existing_profile else None
             )
 
-        # Then continue with political_discussions and social_media_activity in a new row
         col1, col2 = st.columns(2)
         with col1:
             political_discussions = self._render_select(
@@ -338,23 +337,24 @@ class PageManager:
                 existing_profile.political_anxiety if existing_profile else 5
             )
 
-        # Gaza position
-        st.markdown("### עמדה לגבי המלחמה בעזה")
-        st.caption("מה עמדתך לגבי המשך או סיום המלחמה בעזה?")
+        # NEW Gaza war questions
+        st.markdown("### ⚔️ עמדה לגבי המלחמה בעזה")
+        st.caption("מה עמדתך לגבי המלחמה בעזה?")
 
-        gaza_options = [
-            "יש לסיים מיידית ללא תנאים",
-            "יש לסיים בהקדם עם הסדר מינימלי",
-            "יש להמשיך עד להשגת חלק מהיעדים",
-            "יש להמשיך עד להשגת כל היעדים",
-            "יש להמשיך ללא הגבלת זמן"
-        ]
-        gaza_position_pre = st.select_slider(
-            "איפה אתה ממקם את עצמך בסולם הבא?",
-            options=gaza_options,
-            value=getattr(existing_profile, 'gaza_position_pre', gaza_options[2]) if existing_profile else gaza_options[
-                2]
-        )
+        col1, col2 = st.columns(2)
+        with col1:
+            war_priority_pre = self._render_select(
+                "מבין שתי מטרות המלחמה, מה לדעתך המטרה החשובה יותר?",
+                ["בחר תשובה", "החזרת החטופים", "מיטוט חמאס", "לא יודע"],
+                getattr(existing_profile, 'war_priority_pre', '') if existing_profile else None
+            )
+
+        with col2:
+            israel_action_pre = self._render_select(
+                "מה לדעתך ישראל צריכה לעשות עכשיו?",
+                ["בחר תשובה", "עסקה לשחרור חטופים", "מבצע צבאי לכיבוש עזה", "לא יודע"],
+                getattr(existing_profile, 'israel_action_pre', '') if existing_profile else None
+            )
 
         # Complex questions
         feeling_thermometer = self._render_feeling_thermometer(existing_profile, is_pre=True)
@@ -379,7 +379,8 @@ class PageManager:
             "trust_political_system": trust_political_system,
             "political_efficacy": political_efficacy,
             "political_anxiety": political_anxiety,
-            "gaza_position_pre": gaza_position_pre,
+            "war_priority_pre": war_priority_pre if war_priority_pre != "בחר תשובה" else "",
+            "israel_action_pre": israel_action_pre if israel_action_pre != "בחר תשובה" else "",
             "feeling_thermometer_pre": feeling_thermometer,
             "social_distance_pre": social_distance
         }
@@ -404,21 +405,24 @@ class PageManager:
                 5, "post_chat_political_efficacy"
             )
 
-        # Gaza position
+        # NEW Gaza war questions - POST
         st.markdown("### ⚔️ עמדה לגבי המלחמה בעזה - לאחר השיחה")
-        gaza_options = [
-            "יש לסיים מיידית ללא תנאים",
-            "יש לסיים בהקדם עם הסדר מינימלי",
-            "יש להמשיך עד להשגת חלק מהיעדים",
-            "יש להמשיך עד להשגת כל היעדים",
-            "יש להמשיך ללא הגבלת זמן"
-        ]
-        gaza_post = st.select_slider(
-            "איפה אתה ממקם את עצמך כעת בסולם הבא?",
-            options=gaza_options,
-            value=gaza_options[2],
-            key="post_chat_gaza_position"
-        )
+        col1, col2 = st.columns(2)
+        with col1:
+            war_priority_post = self._render_select(
+                "מבין שתי מטרות המלחמה, מה לדעתך המטרה החשובה יותר?",
+                ["בחר תשובה", "החזרת החטופים", "מיטוט חמאס", "לא יודע"],
+                getattr(existing_profile, 'war_priority_post', ''),
+                "post_chat_war_priority"
+            )
+
+        with col2:
+            israel_action_post = self._render_select(
+                "מה לדעתך ישראל צריכה לעשות עכשיו?",
+                ["בחר תשובה", "עסקה לשחרור חטופים", "מבצע צבאי לכיבוש עזה", "לא יודע"],
+                getattr(existing_profile, 'israel_action_post', ''),
+                "post_chat_israel_action"
+            )
 
         feeling_thermometer_post = self._render_feeling_thermometer(existing_profile, is_pre=False, is_post_chat=True)
         social_distance_post = self._render_social_distance(existing_profile, is_pre=False, is_post_chat=True)
@@ -449,7 +453,8 @@ class PageManager:
         return {
             "trust_political_system_post": trust_post,
             "political_efficacy_post": efficacy_post,
-            "gaza_position_post": gaza_post,
+            "war_priority_post": war_priority_post if war_priority_post != "בחר תשובה" else "",
+            "israel_action_post": israel_action_post if israel_action_post != "בחר תשובה" else "",
             "feeling_thermometer_post": feeling_thermometer_post,
             "social_distance_post": social_distance_post,
             "conversation_impact": impact if impact != "בחר תשובה" else "",
@@ -478,8 +483,8 @@ class PageManager:
             "העבודה",
             "מרץ",
             "עוצמה יהודית",
-            "המפלגות החרדיות",  # (replaces ש״ס and יהדות התורה)
-            "המפלגות הערביות"  # (replaces חד״ש - תע״ל and רע״מ)
+            "המפלגות החרדיות",
+            "המפלגות הערביות"
         ]
 
         # Randomize for pre-chat, keep order for post-chat
@@ -572,9 +577,11 @@ class PageManager:
         defaults = {
             'last_election_vote': '',
             'polarization_perception': '',
-            'military_service_recent': '',  # NEW
-            'gaza_position_pre': 'יש להמשיך עד להשגת חלק מהיעדים',
-            'gaza_position_post': '',
+            'military_service_recent': '',
+            'war_priority_pre': '',  # UPDATED
+            'israel_action_pre': '',  # UPDATED
+            'war_priority_post': '',  # UPDATED
+            'israel_action_post': '',  # UPDATED
             'conversation_impact': '',
             'most_interesting': '',
             'changed_mind': ''
