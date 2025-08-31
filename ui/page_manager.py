@@ -19,9 +19,9 @@ class PageManager:
 
     def render_main_menu(self) -> None:
         """Render main menu with user and admin options."""
-        self.ui.render_header(
-            title="🔬 מחקר אקדמי על דעות ועמדות בחברה הישראלית",
-            description="""
+        st.markdown("# 🔬 מחקר אקדמי על דעות ועמדות בחברה הישראלית")
+
+        st.markdown("""
 **אודות המחקר:**
 * המחקר נערך לטובת מחקר אקדמי ומטרתו להבין טוב יותר את מגוון הדעות בחברה הישראלית
 * ההשתתפות היא וולונטרית ואנונימית לחלוטין
@@ -34,8 +34,7 @@ class PageManager:
 3. שאלון קצר נוסף לסיכום
 
 תודה על נכונותכם להשתתף במחקר זה!
-"""
-        )
+""", unsafe_allow_html=False)
 
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
@@ -198,26 +197,26 @@ class PageManager:
             )
             gender = self._render_select(
                 "מגדר:",
-                ["בחר תשובה", "זכר", "נקבה", "אחר"],
+                ["בחר/י תשובה", "זכר", "נקבה", "אחר"],
                 existing_profile.gender if existing_profile else None
             )
 
         with col2:
             region = self._render_select(
                 "אזור מגורים:",
-                ["בחר תשובה", "חיפה והצפון", "אזור השרון", "אזור הדרום",
+                ["בחר/י תשובה", "חיפה והצפון", "אזור השרון", "אזור הדרום",
                  "אזור ירושלים", "תל-אביב והמרכז", "יהודה ושומרון"],
                 existing_profile.region if existing_profile else None
             )
             marital_status = self._render_select(
                 "מצב משפחתי:",
-                ["בחר תשובה", "רווק/ה", "נשוי/נשואה", "בזוגיות", "גרוש/ה", "אלמן/ה"],
+                ["בחר/י תשובה", "רווק/ה", "נשוי/נשואה", "בזוגיות", "גרוש/ה", "אלמן/ה"],
                 existing_profile.marital_status if existing_profile else None
             )
 
         education = self._render_select(
             "השכלה:",
-            ["בחר תשובה", "תיכון", "הכשרה מקצועית", "תואר ראשון", "תואר שני", "תואר שלישי או מעלה"],
+            ["בחר/י תשובה", "תיכון", "הכשרה מקצועית", "תואר ראשון", "תואר שני", "תואר שלישי או מעלה"],
             existing_profile.education if existing_profile else None
         )
 
@@ -226,7 +225,7 @@ class PageManager:
         st.caption("שאלות על השתייכות חברתית ותרבותית")
 
         religiosity = st.select_slider(
-            "איך היית מגדיר את עצמך בהקשר הדתי?",
+            "איך היית מגדיר/ה את עצמך בהקשר הדתי?",
             options=["חילוני", "מסורתי", "דתי", "חרדי"],
             value=self._get_religiosity_label(existing_profile.religiosity if existing_profile else 1)
         )
@@ -237,7 +236,7 @@ class PageManager:
         st.caption("שאלות על השקפות וגישות חברתיות כלליות")
 
         political_stance = st.select_slider(
-            "באיזה חלק של הקשת החברתית-פוליטית היית ממקם את עצמך?",
+            "באיזה חלק של הקשת החברתית-פוליטית את/ה?",
             options=["שמאל", "מרכז-שמאל", "מרכז", "מרכז-ימין", "ימין"],
             value=self._get_political_label(existing_profile.political_stance if existing_profile else 3)
         )
@@ -249,7 +248,7 @@ class PageManager:
 
         last_election_vote = self._render_select(
             "למי הצבעת בבחירות הכנסת האחרונות?",
-            ["בחר תשובה", "הליכוד", "יש עתיד", "הציונות הדתית", "המחנה הממלכתי",
+            ["בחר/י תשובה", "הליכוד", "יש עתיד", "הציונות הדתית", "המחנה הממלכתי",
              "שס", "יהדות התורה", "ישראל ביתנו", "חדש-תעל", "רעמ", "העבודה",
              "מרץ", "בלד", "עוצמה יהודית", "אחר", "לא הצבעתי"],
             getattr(existing_profile, 'last_election_vote', '') if existing_profile else None
@@ -257,7 +256,7 @@ class PageManager:
 
         polarization_perception = self._render_select(
             "האם לדעתך הקיטוב הפוליטי גבר בישראל בשלוש השנים האחרונות?",
-            ["בחר תשובה", "הקיטוב גבר", "הקיטוב לא השתנה", "הקיטוב פחת"],
+            ["בחר/י תשובה", "הקיטוב גבר", "הקיטוב לא השתנה", "הקיטוב פחת"],
             getattr(existing_profile, 'polarization_perception', '') if existing_profile else None
         )
 
@@ -268,15 +267,15 @@ class PageManager:
         col1, col2, col3 = st.columns(3)
         with col1:
             voting_frequency = self._render_select(
-                "האם אתה נוהג להצביע בבחירות?",
-                ["בחר תשובה", "כן, תמיד", "ברוב המקרים", "לעיתים", "כמעט אף פעם", "אף פעם"],
+                "האם את/ה נוהג להצביע בבחירות?",
+                ["בחר/י תשובה", "כן, תמיד", "ברוב המקרים", "לעיתים", "כמעט אף פעם", "אף פעם"],
                 existing_profile.voting_frequency if existing_profile else None
             )
 
         with col2:
             protest_participation = self._render_select(
                 "השתתפות בהפגנות או עצרות (בשנתיים האחרונות):",
-                ["בחר תשובה", "לא השתתפתי", "השתתפתי באירוע אחד",
+                ["בחר/י תשובה", "לא השתתפתי", "השתתפתי באירוע אחד",
                  "השתתפתי במספר אירועים", "השתתפתי באירועים רבים"],
                 existing_profile.protest_participation if existing_profile else None
             )
@@ -284,38 +283,38 @@ class PageManager:
         with col3:
             military_service_recent = self._render_select(
                 "האם שירתת במילואים בשנתיים האחרונות?",
-                ["בחר תשובה", "כן, שירות מלא", "כן, שירות חלקי", "לא", "לא רלוונטי"],
+                ["בחר/י תשובה", "כן, שירות מלא", "כן, שירות חלקי", "לא", "לא רלוונטי"],
                 getattr(existing_profile, 'military_service_recent', '') if existing_profile else None
             )
 
         col1, col2 = st.columns(2)
         with col1:
             political_discussions = self._render_select(
-                "עד כמה אתה נוהג לדון בנושאים חברתיים עם אחרים?",
-                ["בחר תשובה", "כמעט אף פעם", "לעיתים רחוקות", "לעיתים", "לעיתים קרובות", "בקביעות"],
+                "עד כמה את/ה נוהג/ת לדון בנושאים חברתיים עם אחרים?",
+                ["בחר/י תשובה", "כמעט אף פעם", "לעיתים רחוקות", "לעיתים", "לעיתים קרובות", "בקביעות"],
                 existing_profile.political_discussions if existing_profile else None
             )
 
         with col2:
             social_media_activity = self._render_select(
-                "עד כמה אתה פעיל ברשתות חברתיות בנושאים חברתיים?",
-                ["בחר תשובה", "כלל לא פעיל", "קורא אבל לא מגיב",
-                 "מגיב לעיתים", "משתף ומגיב", "פעיל מאוד"],
+                "עד כמה את/ה פעיל/ה ברשתות חברתיות בנושאים חברתיים?",
+                ["בחר/י תשובה", "כלל לא פעיל/ה", "קורא/ת אבל לא מגיב/ה",
+                 "מגיב/ה לעיתים", "משתף/פת ומגיב/ה", "פעיל/ה מאוד"],
                 existing_profile.social_media_activity if existing_profile else None
             )
 
         # Information sources
         influence_sources = st.multiselect(
-            "מאיזה מקורות אתה בדרך כלל מקבל מידע על נושאים חברתיים? (ניתן לבחור מספר אפשרויות)",
+            "מאיזה מקורות את/ה בדרך כלל מקבל מידע על נושאים חברתיים? (ניתן לבחור מספר אפשרויות)",
             options=["חברים ומשפחה", "עיתונות מקצועית", "רשתות חברתיות", "אתרי חדשות",
                      "רדיו וטלוויזיה", "מנהיגי דעת קהל", "ספרים ומחקרים אקדמיים", "ניסיון אישי"],
             default=existing_profile.influence_sources if existing_profile else [],
-            placeholder="בחר מקורות מידע"
+            placeholder="בחר/י מקורות מידע"
         )
 
         # Attitude scales
         st.markdown("### 📊 עמדות כלליות")
-        st.caption("דרג את עמדתך בנושאים הבאים (אין תשובות נכונות או שגויות)")
+        st.caption("דרג/י את עמדתך בנושאים הבאים (אין תשובות נכונות או שגויות)")
 
         col1, col2 = st.columns(2)
         with col1:
@@ -333,7 +332,7 @@ class PageManager:
         with col2:
             political_anxiety = self._render_slider(
                 "רמת החששה מהמצב הכללי במדינה:",
-                "1 = לא מודאג כלל | 5 = דאגה בינונית | 10 = מודאג מאוד",
+                "1 = לא מודאג/ת כלל | 5 = דאגה בינונית | 10 = מודאג/ת מאוד",
                 existing_profile.political_anxiety if existing_profile else 5
             )
 
@@ -345,14 +344,14 @@ class PageManager:
         with col1:
             war_priority_pre = self._render_select(
                 "מבין שתי מטרות המלחמה, מה לדעתך המטרה החשובה יותר?",
-                ["בחר תשובה", "החזרת החטופים", "מיטוט חמאס", "לא יודע"],
+                ["בחר/י תשובה", "החזרת החטופים", "מיטוט חמאס", "לא יודע/ת"],
                 getattr(existing_profile, 'war_priority_pre', '') if existing_profile else None
             )
 
         with col2:
             israel_action_pre = self._render_select(
                 "מה לדעתך ישראל צריכה לעשות עכשיו?",
-                ["בחר תשובה", "עסקה לשחרור חטופים", "מבצע צבאי לכיבוש עזה", "לא יודע"],
+                ["בחר/י תשובה", "עסקה לשחרור חטופים", "מבצע צבאי לכיבוש עזה", "לא יודע/ת"],
                 getattr(existing_profile, 'israel_action_pre', '') if existing_profile else None
             )
 
@@ -361,26 +360,26 @@ class PageManager:
         social_distance = self._render_social_distance(existing_profile, is_pre=True)
 
         return {
-            "gender": gender if gender != "בחר תשובה" else "",
+            "gender": gender if gender != "בחר/י תשובה" else "",
             "age": age,
-            "marital_status": marital_status if marital_status != "בחר תשובה" else "",
-            "region": region if region != "בחר תשובה" else "",
+            "marital_status": marital_status if marital_status != "בחר/י תשובה" else "",
+            "region": region if region != "בחר/י תשובה" else "",
             "religiosity": religiosity_numeric,
-            "education": education if education != "בחר תשובה" else "",
+            "education": education if education != "בחר/י תשובה" else "",
             "political_stance": political_numeric,
-            "last_election_vote": last_election_vote if last_election_vote != "בחר תשובה" else "",
-            "polarization_perception": polarization_perception if polarization_perception != "בחר תשובה" else "",
-            "protest_participation": protest_participation if protest_participation != "בחר תשובה" else "",
-            "military_service_recent": military_service_recent if military_service_recent != "בחר תשובה" else "",
+            "last_election_vote": last_election_vote if last_election_vote != "בחר/י תשובה" else "",
+            "polarization_perception": polarization_perception if polarization_perception != "בחר/י תשובה" else "",
+            "protest_participation": protest_participation if protest_participation != "בחר/י תשובה" else "",
+            "military_service_recent": military_service_recent if military_service_recent != "בחר/י תשובה" else "",
             "influence_sources": influence_sources,
-            "voting_frequency": voting_frequency if voting_frequency != "בחר תשובה" else "",
-            "political_discussions": political_discussions if political_discussions != "בחר תשובה" else "",
-            "social_media_activity": social_media_activity if social_media_activity != "בחר תשובה" else "",
+            "voting_frequency": voting_frequency if voting_frequency != "בחר/י תשובה" else "",
+            "political_discussions": political_discussions if political_discussions != "בחר/י תשובה" else "",
+            "social_media_activity": social_media_activity if social_media_activity != "בחר/י תשובה" else "",
             "trust_political_system": trust_political_system,
             "political_efficacy": political_efficacy,
             "political_anxiety": political_anxiety,
-            "war_priority_pre": war_priority_pre if war_priority_pre != "בחר תשובה" else "",
-            "israel_action_pre": israel_action_pre if israel_action_pre != "בחר תשובה" else "",
+            "war_priority_pre": war_priority_pre if war_priority_pre != "בחר/י תשובה" else "",
+            "israel_action_pre": israel_action_pre if israel_action_pre != "בחר/י תשובה" else "",
             "feeling_thermometer_pre": feeling_thermometer,
             "social_distance_pre": social_distance
         }
@@ -400,7 +399,7 @@ class PageManager:
 
         with col2:
             efficacy_post = self._render_slider(
-                "עד כמה אתה מרגיש כעת שיש לך השפעה על מה שקורה במדינה:",
+                "עד כמה את/ה מרגיש כעת שיש לך השפעה על מה שקורה במדינה:",
                 "1 = אין השפעה כלל | 5 = השפעה בינונית | 10 = השפעה רבה מאוד",
                 5, "post_chat_political_efficacy"
             )
@@ -411,7 +410,7 @@ class PageManager:
         with col1:
             war_priority_post = self._render_select(
                 "מבין שתי מטרות המלחמה, מה לדעתך המטרה החשובה יותר?",
-                ["בחר תשובה", "החזרת החטופים", "מיטוט חמאס", "לא יודע"],
+                ["בחר/י תשובה", "החזרת החטופים", "מיטוט חמאס", "לא יודע/ת"],
                 getattr(existing_profile, 'war_priority_post', ''),
                 "post_chat_war_priority"
             )
@@ -419,7 +418,7 @@ class PageManager:
         with col2:
             israel_action_post = self._render_select(
                 "מה לדעתך ישראל צריכה לעשות עכשיו?",
-                ["בחר תשובה", "עסקה לשחרור חטופים", "מבצע צבאי לכיבוש עזה", "לא יודע"],
+                ["בחר/י תשובה", "עסקה לשחרור חטופים", "מבצע צבאי לכיבוש עזה", "לא יודע/ת"],
                 getattr(existing_profile, 'israel_action_post', ''),
                 "post_chat_israel_action"
             )
@@ -432,7 +431,7 @@ class PageManager:
 
         impact = self._render_select(
             "האם השיחה השפיעה על דעותיך או נקודות המבט שלך?",
-            ["בחר תשובה", "לא השפיעה כלל", "השפיעה מעט", "השפיעה במידה בינונית",
+            ["בחר/י תשובה", "לא השפיעה כלל", "השפיעה מעט", "השפיעה במידה בינונית",
              "השפיעה הרבה", "השפיעה מאוד"],
             getattr(existing_profile, 'conversation_impact', ''),
             "post_chat_conversation_impact"
@@ -453,11 +452,11 @@ class PageManager:
         return {
             "trust_political_system_post": trust_post,
             "political_efficacy_post": efficacy_post,
-            "war_priority_post": war_priority_post if war_priority_post != "בחר תשובה" else "",
-            "israel_action_post": israel_action_post if israel_action_post != "בחר תשובה" else "",
+            "war_priority_post": war_priority_post if war_priority_post != "בחר/י תשובה" else "",
+            "israel_action_post": israel_action_post if israel_action_post != "בחר/י תשובה" else "",
             "feeling_thermometer_post": feeling_thermometer_post,
             "social_distance_post": social_distance_post,
-            "conversation_impact": impact if impact != "בחר תשובה" else "",
+            "conversation_impact": impact if impact != "בחר/י תשובה" else "",
             "most_interesting": interesting,
             "changed_mind": changed
         }
@@ -467,7 +466,7 @@ class PageManager:
         """Render feeling thermometer for political parties."""
         st.markdown("### 🌡️ דירוג רגשי למפלגות")
         st.caption("""
-        דרג את הרגש שלך כלפי המפלגות הבאות, כאשר:
+        דרג/י את הרגש שלך כלפי המפלגות הבאות, כאשר:
         * 0 = רגש שלילי מאוד
         * 50 = ניטרלי/אין דעה מיוחדת  
         * 100 = רגש חיובי מאוד
@@ -518,7 +517,7 @@ class PageManager:
         """Render social distance questions."""
         st.markdown("### 🤝 מרחק חברתי")
         st.caption("""
-        עד כמה היית מרגיש בנוח במצבים הבאים עם אנשים שיש להם השקפות חברתיות-פוליטיות שונות מאוד משלך?
+        עד כמה היית מרגיש/ה בנוח במצבים הבאים עם אנשים שיש להם השקפות חברתיות-פוליטיות שונות מאוד משלך?
         * 1 = מאוד לא בנוח
         * 6 = מאוד בנוח
         """)
@@ -554,7 +553,7 @@ class PageManager:
     def _render_select(self, label: str, options: List[str], current_value: Optional[str],
                        key: Optional[str] = None) -> str:
         """Helper to render select box with default handling."""
-        current = current_value or "בחר תשובה"
+        current = current_value or "בחר/י תשובה"
         index = options.index(current) if current in options else 0
         return st.selectbox(label, options=options, index=index, key=key)
 
@@ -608,7 +607,7 @@ class PageManager:
         }
 
         missing = [name for key, name in required.items()
-                   if not data.get(key) or data.get(key) == "בחר תשובה"]
+                   if not data.get(key) or data.get(key) == "בחר/י תשובה"]
 
         if data.get("age", 0) <= 0:
             missing.append("גיל")
