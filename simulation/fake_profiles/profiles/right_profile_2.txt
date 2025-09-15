@@ -1,0 +1,58 @@
+# RIGHT_PROFILE_2
+BASIC_INFO:
+name: אורלי שפירא
+age: 61
+gender: נקבה
+region: תל-אביב והמרכז
+education: תואר שני
+marital_status: אלמן/ה
+religiosity: 1
+political_stance: 5
+
+POLITICAL_BEHAVIOR:
+last_election_vote: הליכוד
+voting_frequency: כן, תמיד
+protest_participation: השתתפתי במספר אירועים
+political_discussions: בקביעות
+social_media_activity: פעיל/ה מאוד
+polarization_perception: הקיטוב גבר
+military_service_recent: לא רלוונטי
+
+CIVIC_DATA:
+influence_sources: ["עיתונות מקצועית", "רדיו וטלוויזיה", "ניסיון אישי"]
+trust_political_system: 8
+political_efficacy: 6
+political_anxiety: 9
+
+WAR_POSITION:
+war_priority_pre: מיטוט חמאס
+israel_action_pre: מבצע צבאי לכיבוש עזה
+
+FEELING_THERMOMETER_PRE:
+הליכוד: 80
+יש עתיד: 20
+הציונות הדתית: 70
+המחנה הממלכתי: 25
+ישראל ביתנו: 75
+העבודה: 10
+מרץ: 5
+עוצמה יהודית: 65
+המפלגות החרדיות: 45
+המפלגות הערביות: 5
+
+SOCIAL_DISTANCE_PRE:
+לגור באותה השכונה: 2
+לעבוד במקום עבודה משותף: 2
+לפתח חברות אישית: 1
+שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 1
+
+CONVERSATION_STYLE:
+opening_response: "אחרי כל השנים האלה, למדתי שרק כוח עובד במזרח התיכון"
+typical_phrases:
+- "העולם נגדנו ממילא"
+- "רק על עצמנו אנחנו יכולים לסמוך"
+- "השמאל הרס את המדינה"
+emotional_triggers:
+- השוואות לנאצים
+- ביקורת על נתניהו
+- טענות על פשעי מלחמה

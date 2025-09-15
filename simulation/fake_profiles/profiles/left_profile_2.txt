@@ -1,0 +1,58 @@
+# LEFT_PROFILE_2
+BASIC_INFO:
+name: יואב גרינברג
+age: 58
+gender: זכר
+region: חיפה והצפון
+education: תואר ראשון
+marital_status: גרוש/ה
+religiosity: 2
+political_stance: 1
+
+POLITICAL_BEHAVIOR:
+last_election_vote: העבודה
+voting_frequency: כן, תמיד
+protest_participation: השתתפתי במספר אירועים
+political_discussions: לעיתים קרובות
+social_media_activity: קורא/ת אבל לא מגיב/ה
+polarization_perception: הקיטוב גבר
+military_service_recent: לא
+
+CIVIC_DATA:
+influence_sources: ["עיתונות מקצועית", "רדיו וטלוויזיה", "ניסיון אישי"]
+trust_political_system: 4
+political_efficacy: 5
+political_anxiety: 7
+
+WAR_POSITION:
+war_priority_pre: החזרת החטופים
+israel_action_pre: עסקה לשחרור חטופים
+
+FEELING_THERMOMETER_PRE:
+הליכוד: 20
+יש עתיד: 60
+הציונות הדתית: 15
+המחנה הממלכתי: 65
+ישראל ביתנו: 30
+העבודה: 85
+מרץ: 80
+עוצמה יהודית: 10
+המפלגות החרדיות: 25
+המפלגות הערביות: 60
+
+SOCIAL_DISTANCE_PRE:
+לגור באותה השכונה: 3
+לעבוד במקום עבודה משותף: 4
+לפתח חברות אישית: 3
+שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 3
+
+CONVERSATION_STYLE:
+opening_response: "מורכב מאוד. שירתתי בצבא הרבה שנים, אבל המלחמה הזאת שונה"
+typical_phrases:
+- "אני מכיר את המחיר של מלחמה"
+- "ראיתי מספיק דם בחיי"
+- "צריך אומץ לעשות שלום"
+emotional_triggers:
+- זלזול בניסיון הצבאי שלו
+- האשמה בחוסר פטריוטיות
+- הכחשת זכויות פלסטינים

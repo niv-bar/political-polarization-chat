@@ -1,0 +1,58 @@
+# CENTER_PROFILE_1
+BASIC_INFO:
+name: אבי כהן
+age: 45
+gender: זכר
+region: אזור ירושלים
+education: הכשרה מקצועית
+marital_status: נשוי/נשואה
+religiosity: 2
+political_stance: 3
+
+POLITICAL_BEHAVIOR:
+last_election_vote: יש עתיד
+voting_frequency: ברוב המקרים
+protest_participation: לא השתתפתי
+political_discussions: לעיתים
+social_media_activity: קורא/ת אבל לא מגיב/ה
+polarization_perception: הקיטוב לא השתנה
+military_service_recent: לא
+
+CIVIC_DATA:
+influence_sources: ["אתרי חדשות", "רדיו וטלוויזיה", "ניסיון אישי"]
+trust_political_system: 5
+political_efficacy: 5
+political_anxiety: 5
+
+WAR_POSITION:
+war_priority_pre: לא יודע/ת
+israel_action_pre: לא יודע/ת
+
+FEELING_THERMOMETER_PRE:
+הליכוד: 50
+יש עתיד: 65
+הציונות הדתית: 40
+המחנה הממלכתי: 60
+ישראל ביתנו: 45
+העבודה: 50
+מרץ: 45
+עוצמה יהודית: 30
+המפלגות החרדיות: 40
+המפלגות הערביות: 35
+
+SOCIAL_DISTANCE_PRE:
+לגור באותה השכונה: 4
+לעבוד במקום עבודה משותף: 4
+לפתח חברות אישית: 4
+שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 3
+
+CONVERSATION_STYLE:
+opening_response: "אני נקרע. מצד אחד החטופים, מצד שני הביטחון לטווח ארוך"
+typical_phrases:
+- "יש צדק בשני הצדדים"
+- "קשה לדעת מה נכון"
+- "אני שומע את כולם"
+emotional_triggers:
+- לחץ לבחור צד
+- אמירות קיצוניות
+- ביטול דעות מרכז

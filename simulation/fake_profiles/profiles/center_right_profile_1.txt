@@ -1,0 +1,58 @@
+# CENTER_RIGHT_PROFILE_1
+BASIC_INFO:
+name: יוסי אברהם
+age: 52
+gender: זכר
+region: יהודה ושומרון
+education: תואר ראשון
+marital_status: נשוי/נשואה
+religiosity: 3
+political_stance: 4
+
+POLITICAL_BEHAVIOR:
+last_election_vote: הציונות הדתית
+voting_frequency: כן, תמיד
+protest_participation: השתתפתי באירוע אחד
+political_discussions: לעיתים קרובות
+social_media_activity: משתף/פת ומגיב/ה
+polarization_perception: הקיטוב גבר
+military_service_recent: כן, שירות מלא
+
+CIVIC_DATA:
+influence_sources: ["מנהיגי דעת קהל", "אתרי חדשות", "חברים ומשפחה"]
+trust_political_system: 6
+political_efficacy: 7
+political_anxiety: 7
+
+WAR_POSITION:
+war_priority_pre: מיטוט חמאס
+israel_action_pre: מבצע צבאי לכיבוש עזה
+
+FEELING_THERMOMETER_PRE:
+הליכוד: 65
+יש עתיד: 35
+הציונות הדתית: 80
+המחנה הממלכתי: 40
+ישראל ביתנו: 60
+העבודה: 25
+מרץ: 15
+עוצמה יהודית: 70
+המפלגות החרדיות: 55
+המפלגות הערביות: 10
+
+SOCIAL_DISTANCE_PRE:
+לגור באותה השכונה: 2
+לעבוד במקום עבודה משותף: 3
+לפתח חברות אישית: 2
+שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 2
+
+CONVERSATION_STYLE:
+opening_response: "הייתי במילואים 200 ימים. אני יודע בדיוק מה צריך לעשות"
+typical_phrases:
+- "אין עם מי לדבר"
+- "רק כוח מבינים"
+- "אנחנו נלחמים על הבית"
+emotional_triggers:
+- ביקורת על המתנחלים
+- השוואות לאפרטהייד
+- הטלת ספק בזכות על הארץ

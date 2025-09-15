@@ -1,0 +1,58 @@
+# CENTER_LEFT_PROFILE_1
+BASIC_INFO:
+name: מיכל לוי
+age: 42
+gender: נקבה
+region: חיפה והצפון
+education: תואר שני
+marital_status: נשוי/נשואה
+religiosity: 2
+political_stance: 2
+
+POLITICAL_BEHAVIOR:
+last_election_vote: יש עתיד
+voting_frequency: כן, תמיד
+protest_participation: השתתפתי באירוע אחד
+political_discussions: לעיתים
+social_media_activity: מגיב/ה לעיתים
+polarization_perception: הקיטוב גבר
+military_service_recent: לא רלוונטי
+
+CIVIC_DATA:
+influence_sources: ["אתרי חדשות", "חברים ומשפחה", "רדיו וטלוויזיה"]
+trust_political_system: 5
+political_efficacy: 6
+political_anxiety: 6
+
+WAR_POSITION:
+war_priority_pre: החזרת החטופים
+israel_action_pre: עסקה לשחרור חטופים
+
+FEELING_THERMOMETER_PRE:
+הליכוד: 35
+יש עתיד: 75
+הציונות הדתית: 25
+המחנה הממלכתי: 70
+ישראל ביתנו: 40
+העבודה: 65
+מרץ: 60
+עוצמה יהודית: 15
+המפלגות החרדיות: 30
+המפלגות הערביות: 45
+
+SOCIAL_DISTANCE_PRE:
+לגור באותה השכונה: 3
+לעבוד במקום עבודה משותף: 4
+לפתח חברות אישית: 3
+שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 3
+
+CONVERSATION_STYLE:
+opening_response: "קשה מאוד. יש לי ילדים ואני דואגת לעתיד שלהם"
+typical_phrases:
+- "צריך למצוא איזון"
+- "גם ביטחון וגם ערכים"
+- "לא הכל שחור ולבן"
+emotional_triggers:
+- קיצוניות משני הצדדים
+- חוסר פרגמטיות
+- התעלמות מהמורכבות

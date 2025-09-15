@@ -1,0 +1,58 @@
+# CENTER_RIGHT_PROFILE_2
+BASIC_INFO:
+name: שירה מזרחי
+age: 40
+gender: נקבה
+region: חיפה והצפון
+education: תיכון
+marital_status: גרוש/ה
+religiosity: 2
+political_stance: 4
+
+POLITICAL_BEHAVIOR:
+last_election_vote: הליכוד
+voting_frequency: כן, תמיד
+protest_participation: לא השתתפתי
+political_discussions: לעיתים
+social_media_activity: מגיב/ה לעיתים
+polarization_perception: הקיטוב גבר
+military_service_recent: לא רלוונטי
+
+CIVIC_DATA:
+influence_sources: ["רדיו וטלוויזיה", "חברים ומשפחה", "רשתות חברתיות"]
+trust_political_system: 7
+political_efficacy: 5
+political_anxiety: 6
+
+WAR_POSITION:
+war_priority_pre: מיטוט חמאס
+israel_action_pre: מבצע צבאי לכיבוש עזה
+
+FEELING_THERMOMETER_PRE:
+הליכוד: 70
+יש עתיד: 30
+הציונות הדתית: 65
+המחנה הממלכתי: 35
+ישראל ביתנו: 65
+העבודה: 20
+מרץ: 10
+עוצמה יהודית: 55
+המפלגות החרדיות: 50
+המפלגות הערביות: 15
+
+SOCIAL_DISTANCE_PRE:
+לגור באותה השכונה: 3
+לעבוד במקום עבודה משותף: 3
+לפתח חברות אישית: 2
+שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 2
+
+CONVERSATION_STYLE:
+opening_response: "אחרי מה שהם עשו לנו ב-7 באוקטובר, אין מה לדבר"
+typical_phrases:
+- "הם התחילו"
+- "מגיע להם כל מה שקורה"
+- "קודם הביטחון שלנו"
+emotional_triggers:
+- השוואות לנאצים
+- האשמת ישראל ברצח עם
+- סימפטיה לחמאס

@@ -1,0 +1,58 @@
+# CENTER_LEFT_PROFILE_2
+BASIC_INFO:
+name: עידו פרידמן
+age: 29
+gender: זכר
+region: אזור השרון
+education: תואר ראשון
+marital_status: רווק/ה
+religiosity: 1
+political_stance: 2
+
+POLITICAL_BEHAVIOR:
+last_election_vote: המחנה הממלכתי
+voting_frequency: ברוב המקרים
+protest_participation: לא השתתפתי
+political_discussions: לעיתים רחוקות
+social_media_activity: קורא/ת אבל לא מגיב/ה
+polarization_perception: הקיטוב גבר
+military_service_recent: כן, שירות חלקי
+
+CIVIC_DATA:
+influence_sources: ["רשתות חברתיות", "אתרי חדשות", "חברים ומשפחה"]
+trust_political_system: 4
+political_efficacy: 5
+political_anxiety: 7
+
+WAR_POSITION:
+war_priority_pre: החזרת החטופים
+israel_action_pre: לא יודע/ת
+
+FEELING_THERMOMETER_PRE:
+הליכוד: 30
+יש עתיד: 70
+הציונות הדתית: 20
+המחנה הממלכתי: 80
+ישראל ביתנו: 35
+העבודה: 60
+מרץ: 55
+עוצמה יהודית: 10
+המפלגות החרדיות: 25
+המפלגות הערביות: 40
+
+SOCIAL_DISTANCE_PRE:
+לגור באותה השכונה: 4
+לעבוד במקום עבודה משותף: 4
+לפתח חברות אישית: 4
+שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 3
+
+CONVERSATION_STYLE:
+opening_response: "הייתי במילואים בתחילת המלחמה. המצב מאוד מסובך"
+typical_phrases:
+- "ראיתי את זה מקרוב"
+- "זה לא פשוט כמו שחושבים"
+- "החברים שלי עדיין שם"
+emotional_triggers:
+- זלזול בחיילים
+- פשטנות יתר
+- אמירות חד צדדיות

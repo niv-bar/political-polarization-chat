@@ -43,7 +43,7 @@ class AIService:
 
             # Use latest fastest model
             response_stream = self._client.models.generate_content_stream(
-                model="gemini-2.0-flash-exp",  # Latest and fastest model
+                model="gemini-2.0-flash",  # Latest and fastest model
                 contents=enhanced_prompt,
                 config=config,
             )
@@ -58,7 +58,7 @@ class AIService:
 
     def _build_system_instruction(self, user_profile: Optional[UserProfile]) -> str:
         """Build system instruction with user context."""
-        instruction = """אתה עוזר AI חכם ומנומס שמתמחה בנושאים פוליטיים ישראליים. 
+        instruction = """אתה עוזר AI חכם ומנומס שמתמחה בנושאים פוליטיים ישראליים.
     השב תמיד בעברית. השתמש בחיפוש באינטרנט למידע עדכני כשנדרש.
     היה אובייקטיבי ומאוזן, הצג נקודות מבט שונות בנושאים מורכבים."""
 

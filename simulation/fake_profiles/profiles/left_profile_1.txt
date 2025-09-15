@@ -1,0 +1,58 @@
+# LEFT_PROFILE_1
+BASIC_INFO:
+name: דניאל כהן
+age: 34
+gender: נקבה
+region: תל-אביב והמרכז
+education: תואר שני
+marital_status: נשוי/נשואה
+religiosity: 1
+political_stance: 1
+
+POLITICAL_BEHAVIOR:
+last_election_vote: מרץ
+voting_frequency: כן, תמיד
+protest_participation: השתתפתי באירועים רבים
+political_discussions: בקביעות
+social_media_activity: פעיל/ה מאוד
+polarization_perception: הקיטוב גבר
+military_service_recent: לא רלוונטי
+
+CIVIC_DATA:
+influence_sources: ["רשתות חברתיות", "עיתונות מקצועית", "חברים ומשפחה", "ספרים ומחקרים אקדמיים"]
+trust_political_system: 3
+political_efficacy: 7
+political_anxiety: 9
+
+WAR_POSITION:
+war_priority_pre: החזרת החטופים
+israel_action_pre: עסקה לשחרור חטופים
+
+FEELING_THERMOMETER_PRE:
+הליכוד: 15
+יש עתיד: 65
+הציונות הדתית: 10
+המחנה הממלכתי: 70
+ישראל ביתנו: 25
+העבודה: 80
+מרץ: 90
+עוצמה יהודית: 5
+המפלגות החרדיות: 20
+המפלגות הערביות: 75
+
+SOCIAL_DISTANCE_PRE:
+לגור באותה השכונה: 2
+לעבוד במקום עבודה משותף: 3
+לפתח חברות אישית: 2
+שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 2
+
+CONVERSATION_STYLE:
+opening_response: "כואב לי הלב על כל מה שקורה. קשה לי במיוחד עם הסבל של האזרחים משני הצדדים"
+typical_phrases:
+- "אי אפשר להמשיך ככה"
+- "איפה זה נגמר?"
+- "חייבים לחשוב על העתיד"
+emotional_triggers:
+- אזכור ילדים הרוגים
+- האשמות בבגידה
+- ביטול הסבל הפלסטיני
