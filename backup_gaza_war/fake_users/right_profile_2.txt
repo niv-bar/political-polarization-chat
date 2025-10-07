@@ -24,10 +24,9 @@ trust_political_system: 8
 political_efficacy: 6
 political_anxiety: 9
 
-TWO_STATES_POSITION:
-two_states_support_pre: 2
-two_states_feasibility_pre: 2
-security_impact_pre: 2
+WAR_POSITION:
+war_priority_pre: מיטוט חמאס
+israel_action_pre: מבצע צבאי לכיבוש עזה
 
 FEELING_THERMOMETER_PRE:
 הליכוד: 80
@@ -48,16 +47,12 @@ SOCIAL_DISTANCE_PRE:
 שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 1
 
 CONVERSATION_STYLE:
-opening_response: "אחרי כל השנים האלה, למדתי שאין שותף לשלום. כל פתרון של שתי מדינות יהפוך אותנו למדינת בננה"
+opening_response: "אחרי כל השנים האלה, למדתי שרק כוח עובד במזרח התיכון"
 typical_phrases:
 - "העולם נגדנו ממילא"
 - "רק על עצמנו אנחנו יכולים לסמוך"
 - "השמאל הרס את המדינה"
-- "ניסינו בעבר וזה לא עבד"
-- "גוש קטיף לימד אותנו"
 emotional_triggers:
 - השוואות לנאצים
 - ביקורת על נתניהו
-- טענות על אפרטהייד
-- דיבור על "כיבוש"
-- הצעות לחלוקת ירושלים
+- טענות על פשעי מלחמה

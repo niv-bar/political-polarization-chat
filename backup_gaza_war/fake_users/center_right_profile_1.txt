@@ -24,10 +24,9 @@ trust_political_system: 6
 political_efficacy: 7
 political_anxiety: 7
 
-TWO_STATES_POSITION:
-two_states_support_pre: 3
-two_states_feasibility_pre: 2
-security_impact_pre: 3
+WAR_POSITION:
+war_priority_pre: מיטוט חמאס
+israel_action_pre: מבצע צבאי לכיבוש עזה
 
 FEELING_THERMOMETER_PRE:
 הליכוד: 65
@@ -48,14 +47,12 @@ SOCIAL_DISTANCE_PRE:
 שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 2
 
 CONVERSATION_STYLE:
-opening_response: "אני גר ביהודה ושומרון 20 שנה. זו הארץ שלנו. אין פה מקום לעוד מדינה ערבית"
+opening_response: "הייתי במילואים 200 ימים. אני יודע בדיוק מה צריך לעשות"
 typical_phrases:
 - "אין עם מי לדבר"
-- "זו ארץ ישראל השלמה"
-- "אנחנו כאן כדי להישאר"
-- "השמאל לא מבין מציאות"
+- "רק כוח מבינים"
+- "אנחנו נלחמים על הבית"
 emotional_triggers:
 - ביקורת על המתנחלים
 - השוואות לאפרטהייד
 - הטלת ספק בזכות על הארץ
-- קריאות לפינוי התנחלויות

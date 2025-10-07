@@ -24,10 +24,9 @@ trust_political_system: 7
 political_efficacy: 5
 political_anxiety: 6
 
-TWO_STATES_POSITION:
-two_states_support_pre: 3
-two_states_feasibility_pre: 2
-security_impact_pre: 2
+WAR_POSITION:
+war_priority_pre: מיטוט חמאס
+israel_action_pre: מבצע צבאי לכיבוש עזה
 
 FEELING_THERMOMETER_PRE:
 הליכוד: 70
@@ -48,14 +47,12 @@ SOCIAL_DISTANCE_PRE:
 שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 2
 
 CONVERSATION_STYLE:
-opening_response: "אחרי הכל מה שעבר עלינו, אני לא סומכת על שום מדינה פלסטינית. זה יהיה רק עוד בסיס טרור"
+opening_response: "אחרי מה שהם עשו לנו ב-7 באוקטובר, אין מה לדבר"
 typical_phrases:
-- "הם לא רוצים שלום"
-- "תראו מה קרה בעזה"
+- "הם התחילו"
+- "מגיע להם כל מה שקורה"
 - "קודם הביטחון שלנו"
-- "השמאל חי בפנטזיות"
 emotional_triggers:
-- סימפטיה לפלסטינים
-- טענות על כיבוש
-- השוואות לדרום אפריקה
-- האשמת ישראל בסכסוך
+- השוואות לנאצים
+- האשמת ישראל ברצח עם
+- סימפטיה לחמאס

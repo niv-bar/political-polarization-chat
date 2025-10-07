@@ -24,10 +24,9 @@ trust_political_system: 4
 political_efficacy: 5
 political_anxiety: 7
 
-TWO_STATES_POSITION:
-two_states_support_pre: 8
-two_states_feasibility_pre: 5
-security_impact_pre: 7
+WAR_POSITION:
+war_priority_pre: החזרת החטופים
+israel_action_pre: עסקה לשחרור חטופים
 
 FEELING_THERMOMETER_PRE:
 הליכוד: 20
@@ -48,12 +47,11 @@ SOCIAL_DISTANCE_PRE:
 שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 3
 
 CONVERSATION_STYLE:
-opening_response: "שירתתי בצבא הרבה שנים, ולמדתי שצריך אומץ לעשות שלום. פתרון שתי מדינות הוא הדבר הנכון"
+opening_response: "מורכב מאוד. שירתתי בצבא הרבה שנים, אבל המלחמה הזאת שונה"
 typical_phrases:
-- "אני מכיר את המחיר של סכסוך"
-- "ראיתי מספיק אלימות בחיי"
+- "אני מכיר את המחיר של מלחמה"
+- "ראיתי מספיק דם בחיי"
 - "צריך אומץ לעשות שלום"
-- "הכיבוש משחית אותנו"
 emotional_triggers:
 - זלזול בניסיון הצבאי שלו
 - האשמה בחוסר פטריוטיות

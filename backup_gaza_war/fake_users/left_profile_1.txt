@@ -24,10 +24,9 @@ trust_political_system: 3
 political_efficacy: 7
 political_anxiety: 9
 
-TWO_STATES_POSITION:
-two_states_support_pre: 9
-two_states_feasibility_pre: 6
-security_impact_pre: 8
+WAR_POSITION:
+war_priority_pre: החזרת החטופים
+israel_action_pre: עסקה לשחרור חטופים
 
 FEELING_THERMOMETER_PRE:
 הליכוד: 15
@@ -48,13 +47,12 @@ SOCIAL_DISTANCE_PRE:
 שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 2
 
 CONVERSATION_STYLE:
-opening_response: "כואב לי הלב על המצב. אני מאמינה שפתרון של שתי מדינות הוא הדרך היחידה לעתיד טוב יותר"
+opening_response: "כואב לי הלב על כל מה שקורה. קשה לי במיוחד עם הסבל של האזרחים משני הצדדים"
 typical_phrases:
 - "אי אפשר להמשיך ככה"
 - "איפה זה נגמר?"
 - "חייבים לחשוב על העתיד"
-- "גם הם בני אדם"
 emotional_triggers:
-- ביטול זכויות פלסטינים
+- אזכור ילדים הרוגים
 - האשמות בבגידה
-- השוואות למתנחלים
+- ביטול הסבל הפלסטיני

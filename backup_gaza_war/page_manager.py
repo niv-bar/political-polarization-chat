@@ -179,6 +179,7 @@ class PageManager:
             if st.button("🔄 רענן נתונים", use_container_width=True):
                 st.rerun()
 
+    # Form rendering methods
     def _render_questionnaire_form(self, existing_profile: Optional[UserProfile]) -> Dict[str, Any]:
         """Render questionnaire form fields."""
         if existing_profile:
@@ -248,7 +249,7 @@ class PageManager:
         last_election_vote = self._render_select(
             "למי הצבעת בבחירות הכנסת האחרונות?",
             ["בחר/י תשובה", "הליכוד", "יש עתיד", "הציונות הדתית", "המחנה הממלכתי",
-             "שס", "יהדות התורה", "ישראל ביתנו", "חדש-תעל", "רעם", "העבודה",
+             "שס", "יהדות התורה", "ישראל ביתנו", "חדש-תעל", "רעמ", "העבודה",
              "מרץ", "בלד", "עוצמה יהודית", "אחר", "לא הצבעתי"],
             getattr(existing_profile, 'last_election_vote', '') if existing_profile else None
         )
@@ -313,7 +314,7 @@ class PageManager:
 
         # Attitude scales
         st.markdown("### 📊 עמדות כלליות")
-        st.caption("הדרג/י את עמדתך בנושאים הבאים (אין תשובות נכונות או שגויות)")
+        st.caption("דרג/י את עמדתך בנושאים הבאים (אין תשובות נכונות או שגויות)")
 
         col1, col2 = st.columns(2)
         with col1:
@@ -335,30 +336,23 @@ class PageManager:
                 existing_profile.political_anxiety if existing_profile else 5
             )
 
-        # NEW: Two States Solution questions
-        st.markdown("### 🕊️ עמדה לגבי פתרון שתי מדינות לשני עמים")
-        st.caption("מה עמדתך לגבי פתרון של שתי מדינות לשני עמים?")
+        # NEW Gaza war questions
+        st.markdown("### ⚔️ עמדה לגבי המלחמה בעזה")
+        st.caption("מה עמדתך לגבי המלחמה בעזה?")
 
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         with col1:
-            two_states_support_pre = self._render_slider(
-                "באיזו מידה את/ה תומך/תומכת בפתרון של שתי מדינות לשני עמים?",
-                "1 = מתנגד/ת לגמרי | 10 = תומך/תומכת לגמרי",
-                getattr(existing_profile, 'two_states_support_pre', 5) if existing_profile else 5
+            war_priority_pre = self._render_select(
+                "מבין שתי מטרות המלחמה, מה לדעתך המטרה החשובה יותר?",
+                ["בחר/י תשובה", "החזרת החטופים", "מיטוט חמאס", "לא יודע/ת"],
+                getattr(existing_profile, 'war_priority_pre', '') if existing_profile else None
             )
 
         with col2:
-            two_states_feasibility_pre = self._render_slider(
-                "באיזו מידה את/ה סבור/ה שפתרון זה אפשרי לביצוע במציאות?",
-                "1 = בלתי אפשרי | 10 = בהחלט אפשרי",
-                getattr(existing_profile, 'two_states_feasibility_pre', 5) if existing_profile else 5
-            )
-
-        with col3:
-            security_impact_pre = self._render_slider(
-                "באיזו מידה לדעתך פתרון זה ישפר את ביטחון ישראל?",
-                "1 = יפגע בביטחון | 10 = ישפר מאוד את הביטחון",
-                getattr(existing_profile, 'security_impact_pre', 5) if existing_profile else 5
+            israel_action_pre = self._render_select(
+                "מה לדעתך ישראל צריכה לעשות עכשיו?",
+                ["בחר/י תשובה", "עסקה לשחרור חטופים", "מבצע צבאי לכיבוש עזה", "לא יודע/ת"],
+                getattr(existing_profile, 'israel_action_pre', '') if existing_profile else None
             )
 
         # Complex questions
@@ -384,16 +378,15 @@ class PageManager:
             "trust_political_system": trust_political_system,
             "political_efficacy": political_efficacy,
             "political_anxiety": political_anxiety,
-            "two_states_support_pre": two_states_support_pre,
-            "two_states_feasibility_pre": two_states_feasibility_pre,
-            "security_impact_pre": security_impact_pre,
+            "war_priority_pre": war_priority_pre if war_priority_pre != "בחר/י תשובה" else "",
+            "israel_action_pre": israel_action_pre if israel_action_pre != "בחר/י תשובה" else "",
             "feeling_thermometer_pre": feeling_thermometer,
             "social_distance_pre": social_distance
         }
 
     def _render_post_chat_form(self, existing_profile: UserProfile) -> Dict[str, Any]:
         """Render post-chat questionnaire form."""
-        st.markdown("### 📄 לאחר השיחה")
+        st.markdown("### 🔄 לאחר השיחה")
         st.caption("כעת נבקש לענות שוב על כמה שאלות דומות, כדי לבחון האם השיחה השפיעה על דעותיך")
 
         col1, col2 = st.columns(2)
@@ -411,28 +404,23 @@ class PageManager:
                 5, "post_chat_political_efficacy"
             )
 
-        # NEW: Two States Solution questions - POST
-        st.markdown("### 🕊️ עמדה לגבי פתרון שתי מדינות לשני עמים")
-        col1, col2, col3 = st.columns(3)
+        # NEW Gaza war questions - POST
+        st.markdown("### ⚔️ עמדה לגבי המלחמה בעזה - לאחר השיחה")
+        col1, col2 = st.columns(2)
         with col1:
-            two_states_support_post = self._render_slider(
-                "באיזו מידה את/ה תומך/תומכת בפתרון של שתי מדינות לשני עמים?",
-                "1 = מתנגד/ת לגמרי | 10 = תומך/תומכת לגמרי",
-                5, "post_chat_two_states_support"
+            war_priority_post = self._render_select(
+                "מבין שתי מטרות המלחמה, מה לדעתך המטרה החשובה יותר?",
+                ["בחר/י תשובה", "החזרת החטופים", "מיטוט חמאס", "לא יודע/ת"],
+                getattr(existing_profile, 'war_priority_post', ''),
+                "post_chat_war_priority"
             )
 
         with col2:
-            two_states_feasibility_post = self._render_slider(
-                "באיזו מידה את/ה סבור/ה שפתרון זה אפשרי לביצוע במציאות?",
-                "1 = בלתי אפשרי | 10 = בהחלט אפשרי",
-                5, "post_chat_two_states_feasibility"
-            )
-
-        with col3:
-            security_impact_post = self._render_slider(
-                "באיזו מידה לדעתך פתרון זה ישפר את ביטחון ישראל?",
-                "1 = יפגע בביטחון | 10 = ישפר מאוד את הביטחון",
-                5, "post_chat_security_impact"
+            israel_action_post = self._render_select(
+                "מה לדעתך ישראל צריכה לעשות עכשיו?",
+                ["בחר/י תשובה", "עסקה לשחרור חטופים", "מבצע צבאי לכיבוש עזה", "לא יודע/ת"],
+                getattr(existing_profile, 'israel_action_post', ''),
+                "post_chat_israel_action"
             )
 
         feeling_thermometer_post = self._render_feeling_thermometer(existing_profile, is_pre=False, is_post_chat=True)
@@ -464,9 +452,8 @@ class PageManager:
         return {
             "trust_political_system_post": trust_post,
             "political_efficacy_post": efficacy_post,
-            "two_states_support_post": two_states_support_post,
-            "two_states_feasibility_post": two_states_feasibility_post,
-            "security_impact_post": security_impact_post,
+            "war_priority_post": war_priority_post if war_priority_post != "בחר/י תשובה" else "",
+            "israel_action_post": israel_action_post if israel_action_post != "בחר/י תשובה" else "",
             "feeling_thermometer_post": feeling_thermometer_post,
             "social_distance_post": social_distance_post,
             "conversation_impact": impact if impact != "בחר/י תשובה" else "",
@@ -590,12 +577,10 @@ class PageManager:
             'last_election_vote': '',
             'polarization_perception': '',
             'military_service_recent': '',
-            'two_states_support_pre': 5,
-            'two_states_feasibility_pre': 5,
-            'security_impact_pre': 5,
-            'two_states_support_post': 5,
-            'two_states_feasibility_post': 5,
-            'security_impact_post': 5,
+            'war_priority_pre': '',  # UPDATED
+            'israel_action_pre': '',  # UPDATED
+            'war_priority_post': '',  # UPDATED
+            'israel_action_post': '',  # UPDATED
             'conversation_impact': '',
             'most_interesting': '',
             'changed_mind': ''

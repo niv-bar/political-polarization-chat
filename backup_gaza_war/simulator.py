@@ -104,7 +104,7 @@ def generate_conversation(fake_user_profile, intervention_prompt, fake_user_name
     # ✅ פרומפט בסיסי – בקשה מפורשת להחזיר תשובת assistant בלבד
     system_prompt = f"""
 אתה משתתף במחקר על שיחות פוליטיות בישראל. 
-נהל שיחה טבעית עם ישראלי אחר על פתרון שתי מדינות לשני עמים.
+נהל שיחה טבעית עם ישראלי אחר על המלחמה בעזה.
 
 הפרופיל של הישראלי:
 {fake_user_profile}

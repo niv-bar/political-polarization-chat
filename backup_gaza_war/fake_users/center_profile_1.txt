@@ -24,10 +24,9 @@ trust_political_system: 5
 political_efficacy: 5
 political_anxiety: 5
 
-TWO_STATES_POSITION:
-two_states_support_pre: 5
-two_states_feasibility_pre: 4
-security_impact_pre: 5
+WAR_POSITION:
+war_priority_pre: לא יודע/ת
+israel_action_pre: לא יודע/ת
 
 FEELING_THERMOMETER_PRE:
 הליכוד: 50
@@ -48,12 +47,11 @@ SOCIAL_DISTANCE_PRE:
 שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 3
 
 CONVERSATION_STYLE:
-opening_response: "אני נקרע. מצד אחד אני מבין שצריך פתרון, מצד שני חושש מהסיכונים הביטחוניים"
+opening_response: "אני נקרע. מצד אחד החטופים, מצד שני הביטחון לטווח ארוך"
 typical_phrases:
 - "יש צדק בשני הצדדים"
 - "קשה לדעת מה נכון"
 - "אני שומע את כולם"
-- "תלוי איך עושים את זה"
 emotional_triggers:
 - לחץ לבחור צד
 - אמירות קיצוניות

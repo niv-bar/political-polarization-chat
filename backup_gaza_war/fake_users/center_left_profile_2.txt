@@ -24,10 +24,9 @@ trust_political_system: 4
 political_efficacy: 5
 political_anxiety: 7
 
-TWO_STATES_POSITION:
-two_states_support_pre: 6
-two_states_feasibility_pre: 4
-security_impact_pre: 5
+WAR_POSITION:
+war_priority_pre: החזרת החטופים
+israel_action_pre: לא יודע/ת
 
 FEELING_THERMOMETER_PRE:
 הליכוד: 30
@@ -48,12 +47,11 @@ SOCIAL_DISTANCE_PRE:
 שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 3
 
 CONVERSATION_STYLE:
-opening_response: "הייתי במילואים. המצב מאוד מסובך. אני חושב שבסוף נצטרך להיפרד, אבל לא בטוח איך זה יקרה"
+opening_response: "הייתי במילואים בתחילת המלחמה. המצב מאוד מסובך"
 typical_phrases:
 - "ראיתי את זה מקרוב"
 - "זה לא פשוט כמו שחושבים"
-- "אני רוצה שלום אבל לא בכל מחיר"
-- "בסוף נצטרך להיפרד"
+- "החברים שלי עדיין שם"
 emotional_triggers:
 - זלזול בחיילים
 - פשטנות יתר

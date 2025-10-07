@@ -24,10 +24,9 @@ trust_political_system: 6
 political_efficacy: 4
 political_anxiety: 6
 
-TWO_STATES_POSITION:
-two_states_support_pre: 5
-two_states_feasibility_pre: 3
-security_impact_pre: 4
+WAR_POSITION:
+war_priority_pre: החזרת החטופים
+israel_action_pre: לא יודע/ת
 
 FEELING_THERMOMETER_PRE:
 הליכוד: 55
@@ -48,12 +47,11 @@ SOCIAL_DISTANCE_PRE:
 שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 3
 
 CONVERSATION_STYLE:
-opening_response: "אנחנו בדרום חיים את זה כל יום. זה לא תיאוריה בשבילנו. אם יבטיחו לנו ביטחון, אולי אפשר לדבר על פרידה"
+opening_response: "אנחנו בדרום חיים את זה כל יום. זה לא תיאוריה בשבילנו"
 typical_phrases:
 - "מי שלא גר פה לא מבין"
 - "קל לדבר מתל אביב"
 - "אנחנו משלמים את המחיר"
-- "הביטחון קודם כל"
 emotional_triggers:
 - התנשאות
 - התעלמות מסבל תושבי הדרום

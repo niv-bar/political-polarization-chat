@@ -24,10 +24,9 @@ trust_political_system: 4
 political_efficacy: 8
 political_anxiety: 8
 
-TWO_STATES_POSITION:
-two_states_support_pre: 1
-two_states_feasibility_pre: 1
-security_impact_pre: 1
+WAR_POSITION:
+war_priority_pre: מיטוט חמאס
+israel_action_pre: מבצע צבאי לכיבוש עזה
 
 FEELING_THERMOMETER_PRE:
 הליכוד: 60
@@ -48,16 +47,12 @@ SOCIAL_DISTANCE_PRE:
 שבן/בת משפחה יהיה בקשר זוגי עם אדם כזה: 1
 
 CONVERSATION_STYLE:
-opening_response: "שתי מדינות? זו בדיחה. כל ארץ ישראל שייכת לעם ישראל. אין ולא יהיה כאן עוד מדינה"
+opening_response: "אנחנו במלחמת קיום. אין פה מקום לרחמים"
 typical_phrases:
 - "עם ישראל חי"
 - "ארץ ישראל שלנו"
-- "אוסלו כבר הוכיח שזה לא עובד"
-- "הם רוצים להשמיד אותנו"
-- "כל נסיגה היא פשרה על הציונות"
+- "לא נסלח ולא נשכח"
 emotional_triggers:
 - ביקורת על הימין
 - דיבור על זכויות פלסטינים
-- השוואות לכיבוש
-- קריאה לפינוי התנחלויות
-- אזכור "שטחים כבושים"
+- כל ביקורת על הצבא
